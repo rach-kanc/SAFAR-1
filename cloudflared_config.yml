@@ -1,0 +1,18 @@
+# ☁️ Cloudflare Tunnel Configuration for SAFAR
+# ─────────────────────────────────────────────
+# Path: ./cloudflared_config.yml
+
+# 1. Your Unique Tunnel ID
+tunnel: 2e7c0547-1738-4061-bbe7-97344a6dd05a
+
+# 2. Path to your credentials file (moved to USB for portability)
+# Ensure you copy your .json file from C:\Users\user\.cloudflared to this E:\SAFAR_clean folder!
+credentials-file: E:\SAFAR_clean\2e7c0547-1738-4061-bbe7-97344a6dd05a.json
+
+ingress:
+  # 3. Route the main SAFAR app (assuming port 5000)
+  - hostname: safar.rudra.dev
+    service: http://localhost:5000
+
+  # Catch-all 404
+  - service: http_status:404
