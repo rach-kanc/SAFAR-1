@@ -177,6 +177,10 @@ twilio_client = TwilioClient(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) if TWILIO_EN
 
 # In-memory OTP store  {phone: {otp, timestamp}}
 otp_storage = {}
+translation_cache = {}
+TRANSLATION_PROVIDER = "google-gtx-public"
+TRANSLATION_URL = "https://translate.googleapis.com/translate_a/single"
+SUPPORTED_TRANSLATION_LANGS = {"en", "hi", "sa"}
 
 
 def database_unavailable_response():
@@ -249,6 +253,34 @@ def find_or_create_destination(name: str) -> str | None:
     db.session.add(dest)
     db.session.commit()
     return dest.id
+
+
+def normalize_translation_lang(lang: str | None) -> str:
+    lang = (lang or "en").strip().lower()
+    return lang if lang in SUPPORTED_TRANSLATION_LANGS else "en"
+
+
+def normalize_translation_text(text: str | None) -> str:
+    return re.sub(r"\s+", " ", (text or "")).strip()
+
+
+def translate_text_online(text: str, source: str, target: str) -> str:
+    response = requests.get(
+        TRANSLATION_URL,
+        params={
+            "client": "gtx",
+            "sl": source,
+            "tl": target,
+            "dt": "t",
+            "q": text,
+        },
+        timeout=20,
+    )
+    response.raise_for_status()
+    payload = response.json()
+    if not payload or not payload[0]:
+        return text
+    return "".join(part[0] for part in payload[0] if part and part[0]).strip() or text
 
 
 @app.errorhandler(OperationalError)
@@ -671,6 +703,61 @@ def user_edit():
         user.bio = bio
     db.session.commit()
     return redirect(url_for('user_dashboard_page'))
+
+
+@app.route('/api/i18n/translate', methods=['POST'])
+def api_i18n_translate():
+    data = request.get_json(silent=True) or {}
+    source = normalize_translation_lang(data.get('source'))
+    target = normalize_translation_lang(data.get('target'))
+    page = normalize_translation_text(data.get('page'))
+
+    raw_texts = data.get('texts') or []
+    if not isinstance(raw_texts, list):
+        return jsonify({'error': 'texts must be a list.'}), 400
+
+    cleaned_texts = []
+    for item in raw_texts[:50]:
+        if not isinstance(item, str):
+            continue
+        normalized = normalize_translation_text(item)
+        if normalized:
+            cleaned_texts.append(normalized)
+
+    unique_texts = list(dict.fromkeys(cleaned_texts))
+    if not unique_texts or source == target:
+        passthrough = {text: text for text in unique_texts}
+        return jsonify({
+            'page': page,
+            'provider': TRANSLATION_PROVIDER,
+            'source': source,
+            'target': target,
+            'translations': passthrough,
+        })
+
+    translations = {}
+    for text in unique_texts:
+        cache_key = (source, target, text)
+        if cache_key in translation_cache:
+            translations[text] = translation_cache[cache_key]
+            continue
+
+        try:
+            translated = translate_text_online(text, source, target)
+        except requests.RequestException as exc:
+            print(f"[i18n] Translation request failed for {target}: {exc}")
+            translated = text
+
+        translation_cache[cache_key] = translated
+        translations[text] = translated
+
+    return jsonify({
+        'page': page,
+        'provider': TRANSLATION_PROVIDER,
+        'source': source,
+        'target': target,
+        'translations': translations,
+    })
 
 
 # ─────────────────────────────────────────────

@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>AI Travel Assistant — SAFAR</title>
   <meta name="description" content="SAFAR AI — your personal travel assistant for destinations, safety tips, group travel advice, and personalized itinerary planning.">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="/static/travel.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
@@ -193,7 +193,9 @@
         }
     });
   </script>
-  <script src="/static/i18n.js"></script>
+  <script src="/static/dictionary-agent.js"></script>
+  <script src="/static/translator-core.js"></script>
+  <script src="/static/translators/travel.translator.js"></script>
   <script>
   function askBot(question) {
     const panel = document.getElementById('chatbot-panel');
