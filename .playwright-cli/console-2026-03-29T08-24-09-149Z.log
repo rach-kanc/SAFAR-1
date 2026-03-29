@@ -1,0 +1,7 @@
+Total messages: 5 (Errors: 5, Warnings: 0)
+
+[ERROR] Failed to load resource: the server responded with a status of 404 (NOT FOUND) @ http://127.0.0.1:5050/static/images/airavat.png:0
+[ERROR] Failed to load resource: the server responded with a status of 404 (NOT FOUND) @ http://127.0.0.1:5050/static/images/tiger.png:0
+[ERROR] Failed to load resource: the server responded with a status of 404 (NOT FOUND) @ http://127.0.0.1:5050/static/images/peacock.png:0
+[ERROR] Failed to load resource: the server responded with a status of 404 (NOT FOUND) @ http://127.0.0.1:5050/static/images/lotus.png:0
+[ERROR] Failed to load resource: the server responded with a status of 404 (NOT FOUND) @ http://127.0.0.1:5050/favicon.ico:0

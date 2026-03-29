@@ -41,11 +41,10 @@ const TRANSLATIONS = {
     'feat.chat.title': 'Real-Time Chat', 'feat.chat.desc': 'Stay in touch with your travel squad through socket-powered instant messaging.',
     // Animals
     'animals.tag': '🇮🇳 Pride of India', 'animals.h2': 'Guardians of the Journey',
-    'animals.sub': 'Sacred symbols of India — strength, grace, wisdom, and purity guide every SAFAR.',
-    'animal.airavat.name': 'Airavat', 'animal.airavat.sa': 'ऐरावत', 'animal.airavat.desc': 'Divine elephant of Lord Indra — symbol of Power & Wisdom',
-    'animal.tiger.name': 'Royal Bengal Tiger', 'animal.tiger.sa': 'व्याघ्र', 'animal.tiger.desc': 'National animal of India — symbol of Courage & Strength',
-    'animal.peacock.name': 'Peacock', 'animal.peacock.sa': 'मयूर', 'animal.peacock.desc': 'National bird of India — symbol of Grace & Beauty',
-    'animal.lotus.name': 'Lotus', 'animal.lotus.sa': 'कमल', 'animal.lotus.desc': 'National flower of India — symbol of Purity & Enlightenment',
+    'animals.sub': 'Three SAFAR systems secure identity, movement, and assistance across every journey.',
+    'animal.airavat.name': 'Airavat', 'animal.airavat.role': 'Blockchain Security System', 'animal.airavat.desc': 'Protects verified identities, permits, and travel records on an immutable trust layer.',
+    'animal.garuda.name': 'Garuda', 'animal.garuda.role': 'Tracking and Response System', 'animal.garuda.desc': 'Monitors live GPS, triggers SOS flows, enforces geo-fences, and flags anomalies in real time.',
+    'animal.mayurya.name': 'Mayurya', 'animal.mayurya.role': 'SAFAR AI Assistant', 'animal.mayurya.desc': 'Acts as SAFAR\'s own AI copilot for guidance, recommendations, and proactive travel support.',
     // Offers
     'offers.tag': 'Why SAFAR', 'offers.h2': 'Built for Travelers, Backed by AI',
     'offer.free.title': '100% Free Platform', 'offer.free.desc': 'No subscriptions, no hidden fees. Travel together without spending a rupee on the app.',
@@ -102,11 +101,10 @@ const TRANSLATIONS = {
     'feat.chat.title': 'वास्तविक समय चैट', 'feat.chat.desc': 'सॉकेट-संचालित त्वरित संदेश के माध्यम से जुड़े रहें।',
     // Animals
     'animals.tag': '🇮🇳 भारत का गौरव', 'animals.h2': 'यात्रा के संरक्षक',
-    'animals.sub': 'भारत के पवित्र प्रतीक — शक्ति, अनुग्रह, ज्ञान और पवित्रता हर SAFAR का मार्गदर्शन करते हैं।',
-    'animal.airavat.name': 'ऐरावत', 'animal.airavat.sa': 'ऐरावत', 'animal.airavat.desc': 'इंद्र के दिव्य हाथी — शक्ति और ज्ञान के प्रतीक',
-    'animal.tiger.name': 'रॉयल बंगाल टाइगर', 'animal.tiger.sa': 'व्याघ्र', 'animal.tiger.desc': 'भारत का राष्ट्रीय पशु — साहस और शक्ति का प्रतीक',
-    'animal.peacock.name': 'मोर', 'animal.peacock.sa': 'मयूर', 'animal.peacock.desc': 'भारत का राष्ट्रीय पक्षी — अनुग्रह और सौंदर्य का प्रतीक',
-    'animal.lotus.name': 'कमल', 'animal.lotus.sa': 'कमल', 'animal.lotus.desc': 'भारत का राष्ट्रीय फूल — पवित्रता और ज्ञान का प्रतीक',
+    'animals.sub': 'SAFAR की तीन मुख्य प्रणालियाँ हर यात्रा में पहचान, आवाजाही और सहायता को सुरक्षित रखती हैं।',
+    'animal.airavat.name': 'ऐरावत', 'animal.airavat.role': 'ब्लॉकचेन सुरक्षा प्रणाली', 'animal.airavat.desc': 'सत्यापित पहचान, परमिट और यात्रा रिकॉर्ड को अपरिवर्तनीय भरोसेमंद परत पर सुरक्षित रखती है।',
+    'animal.garuda.name': 'गरुड़', 'animal.garuda.role': 'ट्रैकिंग और रेस्पॉन्स प्रणाली', 'animal.garuda.desc': 'लाइव GPS की निगरानी करती है, SOS शुरू करती है, geo-fence लागू करती है और रियल टाइम में अनियमितताओं को चिन्हित करती है।',
+    'animal.mayurya.name': 'मयूर्या', 'animal.mayurya.role': 'SAFAR एआई सहायक', 'animal.mayurya.desc': 'मार्गदर्शन, सुझाव और सक्रिय यात्रा सहायता के लिए SAFAR का अपना AI सह-पायलट है।',
     // Offers
     'offers.tag': 'SAFAR क्यों', 'offers.h2': 'यात्रियों के लिए निर्मित, AI द्वारा समर्थित',
     'offer.free.title': '100% निःशुल्क मंच', 'offer.free.desc': 'कोई सदस्यता नहीं, कोई छिपी फीस नहीं।',
@@ -137,11 +135,10 @@ const TRANSLATIONS = {
     'hero.stat.travelers': 'यात्रिकाः', 'hero.stat.groups': 'समूहाः', 'hero.stat.zones': 'सुरक्षाक्षेत्राणि',
     // Animals
     'animals.tag': '🇮🇳 भारतस्य गौरवम्', 'animals.h2': 'यात्रायाः रक्षकाः',
-    'animals.sub': 'भारतस्य पावनानि प्रतीकानि — शक्तिः, सौन्दर्यम्, प्रज्ञा च प्रत्येकं SAFAR मार्गदर्शयन्ति।',
-    'animal.airavat.name': 'ऐरावतः', 'animal.airavat.sa': 'ऐरावत', 'animal.airavat.desc': 'इन्द्रस्य दिव्यगजः — शक्तेः प्रज्ञायाश्च प्रतीकः',
-    'animal.tiger.name': 'बंगाल-व्याघ्रः', 'animal.tiger.sa': 'व्याघ्र', 'animal.tiger.desc': 'भारतस्य राष्ट्रियपशुः — शौर्यस्य शक्तेश्च प्रतीकः',
-    'animal.peacock.name': 'मयूरः', 'animal.peacock.sa': 'मयूर', 'animal.peacock.desc': 'भारतस्य राष्ट्रियपक्षी — अनुग्रहस्य सौन्दर्यस्य च प्रतीकः',
-    'animal.lotus.name': 'कमलम्', 'animal.lotus.sa': 'कमल', 'animal.lotus.desc': 'भारतस्य राष्ट्रियपुष्पम् — पवित्रतायाः ज्ञानस्य च प्रतीकम्',
+    'animals.sub': 'SAFAR इत्यस्य त्रयः मुख्यप्रणाल्यः प्रत्येकयात्रायां परिचयं गमनागमनं साहाय्यं च संरक्षन्ति।',
+    'animal.airavat.name': 'ऐरावतः', 'animal.airavat.role': 'ब्लॉकचेन-सुरक्षा-प्रणाली', 'animal.airavat.desc': 'सत्यापित-परिचयान्, अनुमतिपत्राणि, यात्रालेखान् च अपरिवर्तनीय-विश्वास-स्तरे रक्षति।',
+    'animal.garuda.name': 'गरुडः', 'animal.garuda.role': 'अनुगमन-प्रत्युत्तर-प्रणाली', 'animal.garuda.desc': 'जीपीएस-स्थानम् अनुगच्छति, एसओएस-संकेतं प्रवर्तयति, भू-सीमाः पालयति, विचलनानि च तत्क्षणं सूचयति।',
+    'animal.mayurya.name': 'मयूर्यः', 'animal.mayurya.role': 'SAFAR-एआई-सहायकः', 'animal.mayurya.desc': 'मार्गदर्शनाय, अनुशंसाभ्यः, सक्रिय-यात्रासाहाय्याय च SAFAR इत्यस्य स्वकीयः एआई-सहचरः।',
     // Sections
     'dest.tag': 'भारतम् अन्वेषयन्तु', 'dest.h2': 'लोकप्रियगंतव्यानि', 'dest.sub': 'भारतस्य प्रियगंतव्येषु समूहैः सह यात्रां कुरुत', 'dest.explore': 'समूहाः →',
     'feat.tag': 'SAFAR-लाभः', 'feat.h2': 'बुद्धिमत्याः यात्रायै सर्वम्', 'feat.sub': 'एकं मञ्चम्। समूहयोजना। AI-सुरक्षा।',

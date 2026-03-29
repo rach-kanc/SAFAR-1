@@ -1,0 +1,82 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="mayurya-bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(170 140) rotate(44) scale(390)">
+      <stop stop-color="#153168"/>
+      <stop offset="1" stop-color="#0A132A"/>
+    </radialGradient>
+    <linearGradient id="mayurya-rim" x1="118" y1="102" x2="398" y2="406" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#90F3D2"/>
+      <stop offset="0.44" stop-color="#2AC6D2"/>
+      <stop offset="1" stop-color="#2560D0"/>
+    </linearGradient>
+    <linearGradient id="mayurya-body" x1="222" y1="140" x2="304" y2="294" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#30D5E7"/>
+      <stop offset="1" stop-color="#1D4EBA"/>
+    </linearGradient>
+    <linearGradient id="mayurya-tail" x1="138" y1="236" x2="372" y2="388" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#51DD90"/>
+      <stop offset="0.46" stop-color="#28C7A6"/>
+      <stop offset="1" stop-color="#235CC8"/>
+    </linearGradient>
+    <filter id="mayurya-shadow" x="62" y="62" width="388" height="388" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#mayurya-shadow)">
+    <circle cx="256" cy="256" r="184" fill="url(#mayurya-bg)"/>
+    <circle cx="256" cy="256" r="176" stroke="url(#mayurya-rim)" stroke-width="6"/>
+    <circle cx="256" cy="256" r="148" stroke="rgba(144,243,210,0.14)" stroke-width="2"/>
+  </g>
+
+  <g stroke="url(#mayurya-rim)" stroke-width="8" stroke-linecap="round">
+    <path d="M256 108V88"/>
+    <path d="M188 122L176 102"/>
+    <path d="M324 122L336 102"/>
+  </g>
+
+  <g fill="url(#mayurya-tail)">
+    <path d="M146 336C170 296 202 274 242 270C232 308 208 340 170 368C156 360 148 350 146 336Z"/>
+    <path d="M366 336C342 296 310 274 270 270C280 308 304 340 342 368C356 360 364 350 366 336Z"/>
+    <path d="M204 378C222 336 240 314 256 312C272 314 290 336 308 378C290 394 274 402 256 404C238 402 222 394 204 378Z"/>
+    <path d="M172 300C194 270 220 252 252 248C244 282 222 306 186 324C178 318 174 310 172 300Z"/>
+    <path d="M340 300C318 270 292 252 260 248C268 282 290 306 326 324C334 318 338 310 340 300Z"/>
+  </g>
+
+  <g fill="#103D93">
+    <circle cx="180" cy="344" r="18"/>
+    <circle cx="332" cy="344" r="18"/>
+    <circle cx="210" cy="372" r="16"/>
+    <circle cx="302" cy="372" r="16"/>
+    <circle cx="256" cy="388" r="18"/>
+  </g>
+  <g fill="#8BE36C">
+    <circle cx="180" cy="344" r="9"/>
+    <circle cx="332" cy="344" r="9"/>
+    <circle cx="210" cy="372" r="8"/>
+    <circle cx="302" cy="372" r="8"/>
+    <circle cx="256" cy="388" r="9"/>
+  </g>
+  <g fill="#D8FFF2">
+    <circle cx="180" cy="344" r="4"/>
+    <circle cx="332" cy="344" r="4"/>
+    <circle cx="210" cy="372" r="4"/>
+    <circle cx="302" cy="372" r="4"/>
+    <circle cx="256" cy="388" r="4"/>
+  </g>
+
+  <path d="M256 146C282 146 300 166 300 194C300 206 298 220 292 238C284 262 272 282 256 300C240 282 228 262 220 238C214 220 212 206 212 194C212 166 230 146 256 146Z" fill="url(#mayurya-body)"/>
+  <path d="M236 184C228 166 212 156 192 154C204 138 220 130 240 130C252 130 264 136 276 148C262 160 248 172 236 184Z" fill="#2CD8BF"/>
+  <path d="M282 132C300 124 320 126 338 142C324 146 310 156 298 170C292 156 286 144 282 132Z" fill="#2FE4A0"/>
+  <circle cx="270" cy="154" r="16" fill="#0F397F"/>
+  <circle cx="275" cy="149" r="5" fill="#F0FFFE"/>
+  <path d="M298 188C314 188 330 196 340 210C324 214 310 224 296 238C294 220 294 202 298 188Z" fill="#1FD0D0"/>
+  <path d="M286 126C296 110 308 102 324 102C322 118 316 130 304 142C298 136 292 130 286 126Z" fill="#2E63D1"/>
+
+  <g stroke="url(#mayurya-rim)" stroke-width="7" stroke-linecap="round">
+    <path d="M156 214C186 188 214 176 242 176"/>
+    <path d="M356 214C326 188 298 176 270 176"/>
+    <path d="M150 248C186 232 214 228 238 232"/>
+    <path d="M362 248C326 232 298 228 274 232"/>
+  </g>
+</svg>

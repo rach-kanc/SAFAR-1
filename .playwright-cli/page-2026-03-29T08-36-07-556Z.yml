@@ -1,0 +1,271 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]: SAFAR
+  - generic: 🪷🪷🪷🌸🌸🌸🌸🌺🌼🌸
+  - generic [ref=e4] [cursor=pointer]:
+    - generic [ref=e5]: 📖
+    - generic [ref=e6]:
+      - generic [ref=e7]: उद्धरेदात्मनात्मानं नात्मानमवसादयेत्।...
+      - generic [ref=e8]: ·
+      - generic [ref=e9]: Lift yourself by your own mind; the mind can be your greatest friend or enemy.
+    - generic [ref=e10]: Bhagavad Gita 6.5
+    - generic [ref=e11]: click to expand
+  - navigation [ref=e12]:
+    - link "SAFAR" [ref=e13] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e14]: SAFAR
+    - generic [ref=e15]:
+      - link "Home" [ref=e16] [cursor=pointer]:
+        - /url: /
+      - link "Groups" [ref=e17] [cursor=pointer]:
+        - /url: /groups
+      - link "Identity Ledger" [ref=e18] [cursor=pointer]:
+        - /url: /blockchain
+      - link "AI Assistant" [ref=e19] [cursor=pointer]:
+        - /url: /travel
+      - link "About" [ref=e20] [cursor=pointer]:
+        - /url: /about
+      - link "Login" [ref=e22] [cursor=pointer]:
+        - /url: /auth
+      - link "Get Started" [ref=e23] [cursor=pointer]:
+        - /url: /auth
+      - button "🇮🇳 EN" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🇮🇳
+        - generic [ref=e26]: EN
+  - generic [ref=e27]:
+    - generic:
+      - img
+      - img
+    - img "Travel destinations" [ref=e29]
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]: ✈️ India's Smartest Travel Platform
+        - heading "Travel Smart. Travel Safe. Travel Together." [level=1] [ref=e34]:
+          - text: Travel Smart.
+          - text: Travel Safe.
+          - text: Travel Together.
+        - paragraph [ref=e35]: SAFAR combines AI-powered group travel with real-time tourist safety — discover destinations, build your travel squad, and explore India with confidence.
+        - generic [ref=e36]:
+          - generic [ref=e37]:
+            - generic [ref=e38]: "0"
+            - text: +
+            - generic [ref=e39]: Travelers
+          - generic [ref=e40]:
+            - generic [ref=e41]: "0"
+            - text: +
+            - generic [ref=e42]: Groups
+          - generic [ref=e43]:
+            - generic [ref=e44]: "0"
+            - generic [ref=e45]: Safety Zones
+      - generic [ref=e47]:
+        - generic [ref=e48]:
+          - button " Groups" [ref=e49] [cursor=pointer]:
+            - generic [ref=e50]: 
+            - generic [ref=e51]: Groups
+          - button " Destinations" [ref=e52] [cursor=pointer]:
+            - generic [ref=e53]: 
+            - generic [ref=e54]: Destinations
+          - button " Safety" [ref=e55] [cursor=pointer]:
+            - generic [ref=e56]: 
+            - generic [ref=e57]: Safety
+        - generic [ref=e59]:
+          - generic [ref=e60]:
+            - generic [ref=e61]: Where are you heading?
+            - textbox "e.g. Manali, Goa, Jaipur..." [ref=e62]
+          - generic [ref=e63]:
+            - generic [ref=e64]:
+              - generic [ref=e65]: Group Type
+              - combobox [ref=e66]:
+                - option "All Types" [selected]
+                - option "Public"
+                - option "Private"
+            - generic [ref=e67]:
+              - generic [ref=e68]: Members
+              - combobox [ref=e69]:
+                - option "Any Size" [selected]
+                - option "1-5"
+                - option "6-15"
+                - option "16+"
+          - link " Find Travel Groups" [ref=e70] [cursor=pointer]:
+            - /url: /groups
+            - generic [ref=e71]: 
+            - generic [ref=e72]: Find Travel Groups
+        - text:     
+  - generic [ref=e73]: 💂
+  - generic [ref=e74]:
+    - generic [ref=e75]:
+      - generic [ref=e76]: Explore India
+      - heading "Popular Destinations" [level=2] [ref=e77]
+      - paragraph [ref=e78]: Join travel squads headed to India's most loved destinations
+    - generic [ref=e79]:
+      - link "Manali 🏔️ Adventure Manali Himalayan paradise for adventure seekers Explore Groups →" [ref=e80] [cursor=pointer]:
+        - /url: /groups
+        - img "Manali" [ref=e81]
+        - generic [ref=e82]:
+          - generic [ref=e83]: 🏔️ Adventure
+          - heading "Manali" [level=3] [ref=e84]
+          - paragraph [ref=e85]: Himalayan paradise for adventure seekers
+          - generic [ref=e86]: Explore Groups →
+      - link "Goa 🏖️ Beach Goa Sun, sand & unforgettable vibes Explore Groups →" [ref=e87] [cursor=pointer]:
+        - /url: /groups
+        - img "Goa" [ref=e88]
+        - generic [ref=e89]:
+          - generic [ref=e90]: 🏖️ Beach
+          - heading "Goa" [level=3] [ref=e91]
+          - paragraph [ref=e92]: Sun, sand & unforgettable vibes
+          - generic [ref=e93]: Explore Groups →
+      - link "Jaipur 🏰 Heritage Jaipur The Pink City's royal grandeur Explore Groups →" [ref=e94] [cursor=pointer]:
+        - /url: /groups
+        - img "Jaipur" [ref=e95]
+        - generic [ref=e96]:
+          - generic [ref=e97]: 🏰 Heritage
+          - heading "Jaipur" [level=3] [ref=e98]
+          - paragraph [ref=e99]: The Pink City's royal grandeur
+          - generic [ref=e100]: Explore Groups →
+      - link "Kerala 🌴 Nature Kerala God's own country — backwaters & tea gardens Explore Groups →" [ref=e101] [cursor=pointer]:
+        - /url: /groups
+        - img "Kerala" [ref=e102]
+        - generic [ref=e103]:
+          - generic [ref=e104]: 🌴 Nature
+          - heading "Kerala" [level=3] [ref=e105]
+          - paragraph [ref=e106]: God's own country — backwaters & tea gardens
+          - generic [ref=e107]: Explore Groups →
+      - link "Varanasi 🕌 Spiritual Varanasi Ancient ghats & sacred Ganges Explore Groups →" [ref=e108] [cursor=pointer]:
+        - /url: /groups
+        - img "Varanasi" [ref=e109]
+        - generic [ref=e110]:
+          - generic [ref=e111]: 🕌 Spiritual
+          - heading "Varanasi" [level=3] [ref=e112]
+          - paragraph [ref=e113]: Ancient ghats & sacred Ganges
+          - generic [ref=e114]: Explore Groups →
+  - generic [ref=e115]: 💂
+  - generic [ref=e116]:
+    - generic [ref=e117]:
+      - generic [ref=e118]: The SAFAR Advantage
+      - heading "Everything You Need for Smart Travel" [level=2] [ref=e119]
+      - paragraph [ref=e120]: One platform. Group planning. AI safety. Real-time tracking.
+    - generic [ref=e121]:
+      - generic [ref=e122]:
+        - generic [ref=e124]: 
+        - heading "Travel Squads" [level=3] [ref=e125]
+        - paragraph [ref=e126]: Create or join travel groups, plan destinations together, and stay connected with real-time group chat.
+      - generic [ref=e127]:
+        - generic [ref=e129]: 
+        - heading "Tourist Safety" [level=3] [ref=e130]
+        - paragraph [ref=e131]: Real-time GPS tracking, geo-fenced safety zones, anomaly detection, and a one-tap panic button.
+      - generic [ref=e132]:
+        - generic [ref=e134]: 
+        - heading "AI Travel Assistant" [level=3] [ref=e135]
+        - paragraph [ref=e136]: Get personalized travel recommendations, safety tips, and destination insights from our AI engine.
+      - generic [ref=e137]:
+        - generic [ref=e139]: 
+        - heading "Smart Geo-Fencing" [level=3] [ref=e140]
+        - paragraph [ref=e141]: Automatic safety scoring based on your location, with alerts when entering high-risk zones.
+      - generic [ref=e142]:
+        - generic [ref=e144]: 
+        - heading "Panic Button" [level=3] [ref=e145]
+        - paragraph [ref=e146]: One-tap emergency alert that instantly notifies authorities with your real-time location.
+      - generic [ref=e147]:
+        - generic [ref=e149]: 
+        - heading "Real-Time Chat" [level=3] [ref=e150]
+        - paragraph [ref=e151]: Stay in touch with your travel squad through socket-powered instant messaging.
+  - generic [ref=e152]: 💂
+  - generic [ref=e153]:
+    - generic [ref=e154]:
+      - generic [ref=e155]: 🇮🇳 Pride of India
+      - heading "Guardians of the Journey" [level=2] [ref=e156]
+      - paragraph [ref=e157]: Sacred symbols of India — strength, grace, wisdom, and purity guide every SAFAR.
+    - generic [ref=e158]:
+      - img "Sacred Guardian" [ref=e160]
+      - img "Sacred Guardian" [ref=e162]
+      - img "Sacred Guardian" [ref=e164]
+      - img "Sacred Guardian" [ref=e166]
+  - generic [ref=e167]: 💂
+  - generic [ref=e168]:
+    - generic [ref=e169]:
+      - generic [ref=e170]: Why SAFAR
+      - heading "Built for Travelers, Backed by AI" [level=2] [ref=e171]
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - generic [ref=e174]: FREE
+        - generic [ref=e175]: 🎉
+        - heading "100% Free Platform" [level=4] [ref=e176]
+        - paragraph [ref=e177]: No subscriptions, no hidden fees. Travel together without spending a rupee on the app.
+      - generic [ref=e178]:
+        - generic [ref=e179]: AI
+        - generic [ref=e180]: 🤖
+        - heading "AI-Powered Intelligence" [level=4] [ref=e181]
+        - paragraph [ref=e182]: Our anomaly detection system monitors travel patterns and flags unusual activity in real time.
+      - generic [ref=e183]:
+        - generic [ref=e184]: KYC
+        - generic [ref=e185]: ✅
+        - heading "Verified Travelers" [level=4] [ref=e186]
+        - paragraph [ref=e187]: Every tourist is KYC-verified with Aadhaar/Passport for a safe and trusted travel community.
+      - generic [ref=e188]:
+        - generic [ref=e189]: LIVE
+        - generic [ref=e190]: 📡
+        - heading "Real-Time Everything" [level=4] [ref=e191]
+        - paragraph [ref=e192]: Live GPS, live chat, live safety scores — every feature updates instantly.
+  - generic [ref=e194]:
+    - heading "Ready for Your Next Adventure?" [level=2] [ref=e195]
+    - paragraph [ref=e196]: Join thousands of travelers who explore India smartly and safely with SAFAR.
+    - generic [ref=e197]:
+      - link "Start Your Journey — Free" [ref=e198] [cursor=pointer]:
+        - /url: /auth
+      - link "🤖 Talk to AI Assistant" [ref=e199] [cursor=pointer]:
+        - /url: /travel
+  - contentinfo [ref=e200]:
+    - generic [ref=e201]:
+      - generic [ref=e202]:
+        - generic [ref=e203]: SAFAR
+        - paragraph [ref=e204]: India's first AI-powered group travel platform with real-time tourist safety. Plan smart, travel safe.
+        - generic [ref=e205]:
+          - link "" [ref=e206] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e207]: 
+          - link "" [ref=e208] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e209]: 
+          - link "" [ref=e210] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e211]: 
+          - link "" [ref=e212] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e213]: 
+        - generic [ref=e214]:
+          - generic [ref=e215]: कर्मण्येवाधिकारस्ते मा फलेषु कदाचन
+          - generic [ref=e216]: — Bhagavad Gita 2.47
+      - generic [ref=e217]:
+        - heading "Quick Links" [level=4] [ref=e218]
+        - link "Home" [ref=e219] [cursor=pointer]:
+          - /url: /
+        - link "Find Groups" [ref=e220] [cursor=pointer]:
+          - /url: /groups
+        - link "AI Assistant" [ref=e221] [cursor=pointer]:
+          - /url: /travel
+        - link "Identity Ledger Hub" [ref=e222] [cursor=pointer]:
+          - /url: /blockchain
+        - link "About Us" [ref=e223] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=e224]:
+        - heading "Safety" [level=4] [ref=e225]
+        - link "Safety Dashboard" [ref=e226] [cursor=pointer]:
+          - /url: /profile
+        - link "Admin Panel" [ref=e227] [cursor=pointer]:
+          - /url: /admin
+        - link "Register Tourist" [ref=e228] [cursor=pointer]:
+          - /url: /auth
+        - link "Safety Zones" [ref=e229] [cursor=pointer]:
+          - /url: "#"
+      - generic [ref=e230]:
+        - heading "Resources" [level=4] [ref=e231]
+        - link "Travel Tips" [ref=e232] [cursor=pointer]:
+          - /url: "#"
+        - link "Emergency Contacts" [ref=e233] [cursor=pointer]:
+          - /url: "#"
+        - link "KYC Guidelines" [ref=e234] [cursor=pointer]:
+          - /url: "#"
+        - link "Privacy Policy" [ref=e235] [cursor=pointer]:
+          - /url: "#"
+    - paragraph [ref=e237]: © 2025 SAFAR — Built with ❤️ by Team Safar
+  - button [ref=e238] [cursor=pointer]:
+    - img [ref=e239]

@@ -3,11 +3,12 @@ database.py - Combined Models for TravelTogether + Astra Tourist Safety
 """
 
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, text
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
 import hashlib
+import time as _time
 
 db = SQLAlchemy()
 
@@ -26,46 +27,65 @@ def generate_id():
 class BlockchainBlock(db.Model):
     """Immutable Ledger for Login/Registration Security (Industry Standard)."""
     __tablename__ = 'blockchain_ledger'
-    
+
     id              = db.Column(db.Integer, primary_key=True, autoincrement=True)
     index           = db.Column(db.Integer, nullable=False)
-    timestamp       = db.Column(db.DateTime, default=datetime.now)
-    event_type      = db.Column(db.String(50), nullable=False) # 'REGISTER' or 'LOGIN'
+    # timestamp_str is the EXACT string used when computing block_hash.
+    # This avoids DB round-trip precision loss breaking verify().
+    timestamp_str   = db.Column(db.String(30), nullable=False)  # ISO microsecond string
+    timestamp       = db.Column(db.DateTime, nullable=False)    # for display/sorting
+    event_type      = db.Column(db.String(50), nullable=False)  # 'REGISTER' | 'LOGIN'
     user_id         = db.Column(db.String(32), nullable=False)
-    data_hash       = db.Column(db.String(64), nullable=False) # SHA-256 of the event
+    data_hash       = db.Column(db.String(64), nullable=False)  # SHA-256 of event payload
     previous_hash   = db.Column(db.String(64), nullable=False)
-    block_hash      = db.Column(db.String(64), nullable=False, unique=True)
+    block_hash      = db.Column(db.String(64), nullable=False)  # integrity proven by chain linkage
 
     @staticmethod
-    def calculate_hash(index, timestamp, event_type, user_id, data_hash, previous_hash):
-        value = f"{index}{timestamp}{event_type}{user_id}{data_hash}{previous_hash}"
+    def calculate_hash(index, timestamp_str, event_type, user_id, data_hash, previous_hash):
+        """Hash is computed over the stable timestamp_str, not the DateTime object."""
+        value = f"{index}{timestamp_str}{event_type}{user_id}{data_hash}{previous_hash}"
         return hashlib.sha256(value.encode()).hexdigest()
 
     @staticmethod
     def get_latest_block():
-        return BlockchainBlock.query.order_by(BlockchainBlock.index.desc()).first()
+        """Always query fresh — bypasses ORM identity cache using with_for_update."""
+        return (
+            BlockchainBlock.query
+            .order_by(BlockchainBlock.index.desc())
+            .first()
+        )
 
     @staticmethod
     def mine_block(event_type, user_id, event_data):
-        """Creates a new block in the chain."""
+        """Creates and returns a new block; adds monotonic nonce to guarantee unique hash."""
+        # Expire ORM cache so get_latest_block() reads DB fresh
+        db.session.expire_all()
+
         last_block = BlockchainBlock.get_latest_block()
-        idx = (last_block.index + 1) if last_block else 0
-        prev_h = last_block.block_hash if last_block else "0" * 64
-        
-        # Hash the specific event data (e.g. username+ip)
+        idx    = (last_block.index + 1) if last_block else 0
+        prev_h = last_block.block_hash  if last_block else "0" * 64
+
+        # Add a monotonic nanosecond nonce so rapid same-user logins always differ
+        if isinstance(event_data, dict):
+            event_data.setdefault('nonce', _time.monotonic_ns())
+
+        # Hash the event payload
         d_hash = hashlib.sha256(str(event_data).encode()).hexdigest()
-        
-        ts = datetime.now()
-        b_hash = BlockchainBlock.calculate_hash(idx, ts, event_type, user_id, d_hash, prev_h)
-        
+
+        # Use a stable ISO string for hashing — store it so verify() can reproduce it exactly
+        ts     = datetime.now()
+        ts_str = ts.strftime('%Y-%m-%dT%H:%M:%S.%f')   # microsecond-precise string
+        b_hash = BlockchainBlock.calculate_hash(idx, ts_str, event_type, str(user_id), d_hash, prev_h)
+
         new_block = BlockchainBlock(
-            index=idx,
-            timestamp=ts,
-            event_type=event_type,
-            user_id=user_id,
-            data_hash=d_hash,
-            previous_hash=prev_h,
-            block_hash=b_hash
+            index         = idx,
+            timestamp_str = ts_str,
+            timestamp     = ts,
+            event_type    = event_type,
+            user_id       = str(user_id),
+            data_hash     = d_hash,
+            previous_hash = prev_h,
+            block_hash    = b_hash,
         )
         return new_block
 

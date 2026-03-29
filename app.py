@@ -17,6 +17,15 @@ PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
+# Windows terminals in this project path can default to cp1252 and crash on emoji logs.
+for _stream_name in ("stdout", "stderr"):
+    _stream = getattr(sys, _stream_name, None)
+    if hasattr(_stream, "reconfigure"):
+        try:
+            _stream.reconfigure(encoding="utf-8", errors="replace")
+        except Exception:
+            pass
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -814,6 +823,7 @@ def api_register():
         traceback.print_exc()
         return jsonify({'error': f'Database Error: {e}'}), 409
 
+
     # --- Optionally create Tourist profile ---
     tourist = None
     if data.get('kyc_id') and data.get('kyc_type') and data.get('visit_duration_days'):
@@ -838,16 +848,20 @@ def api_register():
     # --- Blockchain Security (Industrial Grade) ---
     # Mine a new block to permanently record this registration event
     try:
+        import time
         register_event = {
             "username": user.username,
             "email": user.email,
             "ip": request.remote_addr,
-            "action": "ACCOUNT_CREATED"
+            "action": "ACCOUNT_CREATED",
+            "nonce": time.monotonic_ns()   # unique per registration
         }
         block = BlockchainBlock.mine_block("REGISTER", user.id, register_event)
         db.session.add(block)
     except Exception as eb:
+        db.session.rollback()
         print(f"[Blockchain Error] Failed to log registration: {eb}")
+
 
     db.session.commit()
     session['user_id'] = user.id
@@ -877,14 +891,21 @@ def api_login():
         session['user_id'] = user.id
         
         # --- Blockchain Security ---
-        # Mine a block for successful login
+        # Mine a block for every successful login.
+        # mine_block() adds a monotonic nonce automatically for unique hashes.
         try:
-            login_event = {"username": user.username, "ip": request.remote_addr, "status": "SUCCESS"}
+            login_event = {
+                "username": user.username,
+                "ip": request.remote_addr,
+                "status": "SUCCESS",
+                # nonce added automatically inside mine_block()
+            }
             block = BlockchainBlock.mine_block("LOGIN", user.id, login_event)
             db.session.add(block)
             db.session.commit()
         except Exception as eb:
-            print(f"[Blockchain Error] Failed to log login: {eb}")
+            db.session.rollback()   # keep session clean so login still succeeds
+            print(f"[Blockchain] Login block failed: {eb}")
 
         return jsonify({'message': 'Login successful.', 'user_id': user.id}), 200
 
@@ -898,6 +919,23 @@ def api_login():
         if tourist.user_id:
             session['user_id'] = tourist.user_id
         session['tourist_id'] = tourist.id
+
+        # --- Blockchain Security for Phone Login ---
+        try:
+            login_event = {
+                "phone": tourist.phone,
+                "ip": request.remote_addr,
+                "status": "TOURIST_SUCCESS",
+                "tourist_id": tourist.id
+            }
+            # Mine block even for tourists to ensure audit integrity
+            block = BlockchainBlock.mine_block("TOURIST_LOGIN", tourist.user_id or 0, login_event)
+            db.session.add(block)
+            db.session.commit()
+        except Exception as eb:
+            db.session.rollback()
+            print(f"[Blockchain] Tourist login block failed: {eb}")
+
         return jsonify({'message': 'Tourist login successful.', 'tourist_id': tourist.id}), 200
 
     return jsonify({'error': 'Provide username+password or phone.'}), 400
@@ -934,7 +972,8 @@ def api_blockchain_blocks():
 def api_blockchain_verify():
     """
     Audits the entire identity ledger to ensure no administrative tampering
-    has occurred. This is the core of SAFAR's blockchain security.
+    has occurred. Uses timestamp_str (the exact string at mining time) to
+    recalculate hashes deterministically.
     """
     blocks = BlockchainBlock.query.order_by(BlockchainBlock.index.asc()).all()
     chain_valid = True
@@ -942,29 +981,32 @@ def api_blockchain_verify():
 
     for i in range(len(blocks)):
         block = blocks[i]
-        
+
+        # Use timestamp_str if present (new blocks); fall back to str(timestamp) for legacy rows
+        ts_key = block.timestamp_str if block.timestamp_str else str(block.timestamp)
+
         # 1. Verify internal hash
         recalculated = BlockchainBlock.calculate_hash(
-            block.index, block.timestamp, block.event_type, 
+            block.index, ts_key, block.event_type,
             block.user_id, block.data_hash, block.previous_hash
         )
         if recalculated != block.block_hash:
             chain_valid = False
-            errors.append(f"Block #{block.index} hash mismatch (Internal Tampering detected)")
+            errors.append(f"Block #{block.index} hash mismatch — possible tamper or legacy block")
 
-        # 2. Verify link to previous block
+        # 2. Verify chain linkage
         if i > 0:
-            prev_block = blocks[i-1]
+            prev_block = blocks[i - 1]
             if block.previous_hash != prev_block.block_hash:
                 chain_valid = False
-                errors.append(f"Block #{block.index} previous_hash mismatch (Chain broken at #{i})")
+                errors.append(f"Block #{block.index} previous_hash broken at #{i}")
 
     return jsonify({
-        "status": "SECURE" if chain_valid else "TAMPERED",
-        "block_count": len(blocks),
+        "status":             "SECURE" if chain_valid else "TAMPERED",
+        "block_count":        len(blocks),
         "integrity_verified": chain_valid,
-        "anomalies": errors,
-        "audit_time": datetime.now().isoformat()
+        "anomalies":          errors,
+        "audit_time":         datetime.now().isoformat()
     })
 
 

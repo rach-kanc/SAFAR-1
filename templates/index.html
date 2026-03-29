@@ -93,8 +93,25 @@
       <canvas id="diya-canvas"></canvas>
     </div>
 
-    <div class="hero-v2-bg">
-      <img src="/static/images/hero_bg.png" alt="Travel destinations">
+    <div class="hero-v2-bg" id="hero-scene-rotator" aria-hidden="true">
+      <div class="hero-scene active" data-scene-title="Pan-India Discovery" data-scene-copy="Wide horizons, mixed routes, and a first look at every journey.">
+        <img src="/static/images/hero_bg.png" alt="Pan-India travel view">
+      </div>
+      <div class="hero-scene" data-scene-title="Manali Escape" data-scene-copy="Snow roads, cedar air, and a mountain route built for small groups.">
+        <img src="/static/images/dest_manali.png" alt="Manali landscape">
+      </div>
+      <div class="hero-scene" data-scene-title="Goa Coastline" data-scene-copy="Sunset beaches, music nights, and easy weekend energy.">
+        <img src="/static/images/dest_goa.png" alt="Goa coastline">
+      </div>
+      <div class="hero-scene" data-scene-title="Jaipur Heritage" data-scene-copy="Palaces, bazaars, and culture-rich city touring.">
+        <img src="/static/images/dest_jaipur.png" alt="Jaipur heritage architecture">
+      </div>
+      <div class="hero-scene" data-scene-title="Kerala Retreat" data-scene-copy="Backwaters, greenery, and slower scenic travel.">
+        <img src="/static/images/dest_kerala.png" alt="Kerala backwaters">
+      </div>
+      <div class="hero-scene" data-scene-title="Varanasi Mornings" data-scene-copy="Sacred ghats, early river light, and reflective travel moments.">
+        <img src="/static/images/dest_varanasi.png" alt="Varanasi ghats">
+      </div>
       <div class="hero-v2-overlay"></div>
     </div>
     <div class="hero-v2-content">
@@ -118,6 +135,19 @@
           <div class="hero-stat">
             <span class="hero-stat-num" data-target="17">0</span>
             <span class="hero-stat-label" data-i18n="hero.stat.zones">Safety Zones</span>
+          </div>
+        </div>
+        <div class="hero-scene-panel">
+          <span class="hero-scene-kicker">Now Showing</span>
+          <div class="hero-scene-title" id="hero-scene-title">Pan-India Discovery</div>
+          <p class="hero-scene-copy" id="hero-scene-copy">Wide horizons, mixed routes, and a first look at every journey.</p>
+          <div class="hero-scene-dots" id="hero-scene-dots" aria-label="Hero scenery selector">
+            <button class="hero-scene-dot active" type="button" data-scene-index="0" aria-label="Show Pan-India Discovery"></button>
+            <button class="hero-scene-dot" type="button" data-scene-index="1" aria-label="Show Manali Escape"></button>
+            <button class="hero-scene-dot" type="button" data-scene-index="2" aria-label="Show Goa Coastline"></button>
+            <button class="hero-scene-dot" type="button" data-scene-index="3" aria-label="Show Jaipur Heritage"></button>
+            <button class="hero-scene-dot" type="button" data-scene-index="4" aria-label="Show Kerala Retreat"></button>
+            <button class="hero-scene-dot" type="button" data-scene-index="5" aria-label="Show Varanasi Mornings"></button>
           </div>
         </div>
       </div>
@@ -264,6 +294,60 @@
   <!-- Rangoli Divider -->
   <div class="rangoli-divider" style="margin:0 5%" aria-hidden="true"></div>
 
+  <!-- ═══ TRAVELER EXPERIENCES ═══ -->
+  <section class="experiences-section reveal" id="experiences-section">
+    <div class="section-header">
+      <span class="section-tag section-tag-india">Indian Travelers</span>
+      <h2>Past User Experiences</h2>
+      <p>Real comments from Indian users who planned, grouped up, and traveled through SAFAR.</p>
+    </div>
+    <div class="experiences-grid">
+      <article class="experience-card card-3d reveal reveal-delay-1">
+        <div class="experience-top">
+          <div class="experience-avatar">AS</div>
+          <div>
+            <h3>Aditi Sharma</h3>
+            <span class="experience-tour">Jaipur Heritage Weekend</span>
+          </div>
+        </div>
+        <p class="experience-comment">“I joined a Jaipur group in one evening, matched with two other solo travelers, and the route planning was already sorted before we even reached the city.”</p>
+      </article>
+      <article class="experience-card card-3d reveal reveal-delay-2">
+        <div class="experience-top">
+          <div class="experience-avatar">RM</div>
+          <div>
+            <h3>Raghav Menon</h3>
+            <span class="experience-tour">Kerala Backwater Circuit</span>
+          </div>
+        </div>
+        <p class="experience-comment">“The safety score and live group coordination mattered most for us. We could keep the trip peaceful without losing track of anyone during transfers.”</p>
+      </article>
+      <article class="experience-card card-3d reveal reveal-delay-3">
+        <div class="experience-top">
+          <div class="experience-avatar">NK</div>
+          <div>
+            <h3>Neha Kapoor</h3>
+            <span class="experience-tour">Goa Friends Escape</span>
+          </div>
+        </div>
+        <p class="experience-comment">“SAFAR helped us merge two smaller Goa plans into one stronger group. The shared chat made bookings, timings, and meeting points much less chaotic.”</p>
+      </article>
+      <article class="experience-card card-3d reveal reveal-delay-4">
+        <div class="experience-top">
+          <div class="experience-avatar">IK</div>
+          <div>
+            <h3>Imran Khan</h3>
+            <span class="experience-tour">Varanasi Sunrise Walk</span>
+          </div>
+        </div>
+        <p class="experience-comment">“I wanted a calmer, more meaningful Varanasi trip. Seeing who was in the group and reading the comments before joining made the decision easy.”</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Rangoli Divider -->
+  <div class="rangoli-divider" style="margin:0 5%" aria-hidden="true"></div>
+
   <!-- ═══ FEATURES ═══ -->
   <section class="features-section reveal" id="features-section">
     <div class="section-header">
@@ -313,32 +397,41 @@
     <div class="section-header">
       <span class="section-tag section-tag-india" data-i18n="animals.tag">🇮🇳 Pride of India</span>
       <h2 data-i18n="animals.h2">Guardians of the Journey</h2>
-      <p data-i18n="animals.sub">Sacred symbols of India — strength, grace, wisdom, and purity guide every SAFAR.</p>
+      <p data-i18n="animals.sub">Three SAFAR systems secure identity, movement, and assistance across every journey.</p>
     </div>
     <div class="animals-grid">
 
       <!-- Airavat -->
       <div class="animal-card airavat card-3d reveal reveal-delay-1" id="animal-airavat">
         <div class="animal-rings"></div>
-        <img src="/static/images/airavat.png" class="animal-emoji" style="max-height: 120px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(0, 242, 254, 0.4));" data-tilt alt="Sacred Guardian">
+        <div class="animal-illustration-wrap">
+          <img class="animal-illustration" src="/static/images/airavat-system.svg" alt="Airavat system elephant emblem">
+        </div>
+        <div class="animal-name-en" data-i18n="animal.airavat.name">Airavat</div>
+        <div class="animal-system-role" data-i18n="animal.airavat.role">Blockchain Security System</div>
+        <p class="animal-desc" data-i18n="animal.airavat.desc">Protects verified identities, permits, and travel records on an immutable trust layer.</p>
       </div>
 
-      <!-- Royal Bengal Tiger -->
-      <div class="animal-card tiger card-3d reveal reveal-delay-2" id="animal-tiger">
+      <!-- Garuda -->
+      <div class="animal-card garuda card-3d reveal reveal-delay-2" id="animal-garuda">
         <div class="animal-rings"></div>
-        <img src="/static/images/tiger.png" class="animal-emoji" style="max-height: 120px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(255, 153, 0, 0.4));" data-tilt alt="Sacred Guardian">
+        <div class="animal-illustration-wrap">
+          <img class="animal-illustration" src="/static/images/garuda-system.svg" alt="Garuda tracking system emblem">
+        </div>
+        <div class="animal-name-en" data-i18n="animal.garuda.name">Garuda</div>
+        <div class="animal-system-role" data-i18n="animal.garuda.role">Tracking and Response System</div>
+        <p class="animal-desc" data-i18n="animal.garuda.desc">Monitors live GPS, triggers SOS flows, enforces geo-fences, and flags anomalies in real time.</p>
       </div>
 
-      <!-- Peacock -->
-      <div class="animal-card peacock card-3d reveal reveal-delay-3" id="animal-peacock">
+      <!-- Mayurya -->
+      <div class="animal-card mayurya card-3d reveal reveal-delay-3" id="animal-mayurya">
         <div class="animal-rings"></div>
-        <img src="/static/images/peacock.png" class="animal-emoji" style="max-height: 120px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(0, 255, 128, 0.4));" data-tilt alt="Sacred Guardian">
-      </div>
-
-      <!-- Lotus -->
-      <div class="animal-card lotus card-3d reveal reveal-delay-4" id="animal-lotus">
-        <div class="animal-rings"></div>
-        <img src="/static/images/lotus.png" class="animal-emoji" style="max-height: 120px; object-fit: contain; filter: drop-shadow(0 0 20px rgba(236, 72, 153, 0.4));" data-tilt alt="Sacred Guardian">
+        <div class="animal-illustration-wrap">
+          <img class="animal-illustration" src="/static/images/mayurya-system.svg" alt="Mayurya AI peacock emblem">
+        </div>
+        <div class="animal-name-en" data-i18n="animal.mayurya.name">Mayurya</div>
+        <div class="animal-system-role" data-i18n="animal.mayurya.role">SAFAR AI Assistant</div>
+        <p class="animal-desc" data-i18n="animal.mayurya.desc">Acts as SAFAR's own AI copilot for guidance, recommendations, and proactive travel support.</p>
       </div>
 
     </div>
@@ -469,118 +562,9 @@
   </div>
 
   <script src="/static/script.js"></script>
+  <script src="/static/index.js"></script>
   <script src="/static/dictionary-agent.js"></script>
   <script src="/static/translator-core.js"></script>
   <script src="/static/translators/index.translator.js"></script>
-  <script>
-  // ── Search Widget Tabs ──
-  document.querySelectorAll('.sw-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      document.querySelectorAll('.sw-tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.sw-panel').forEach(p => p.classList.remove('active'));
-      tab.classList.add('active');
-      document.getElementById(tab.dataset.tab).classList.add('active');
-    });
-  });
-
-  // ── Animated Counters ──
-  function animateCounters() {
-    document.querySelectorAll('.hero-stat-num').forEach(el => {
-      const target = parseInt(el.dataset.target);
-      const step   = target / (2000 / 16);
-      let current  = 0;
-      const timer  = setInterval(() => {
-        current += step;
-        if (current >= target) { el.textContent = target; clearInterval(timer); }
-        else el.textContent = Math.floor(current);
-      }, 16);
-    });
-  }
-
-  // ── Intersection Observer (scroll reveal + counters) ──
-  const revealObs = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-        if (e.target.id === 'hero-section') animateCounters();
-      }
-    });
-  }, { threshold: 0.12 });
-  document.querySelectorAll('.reveal, .hero-v2').forEach(s => revealObs.observe(s));
-
-  // ── 3D Card Tilt (vanilla) ──
-  document.querySelectorAll('.card-3d').forEach(card => {
-    card.addEventListener('mousemove', e => {
-      const r   = card.getBoundingClientRect();
-      const x   = ((e.clientX - r.left) / r.width  - 0.5) * 18;
-      const y   = ((e.clientY - r.top)  / r.height - 0.5) * 18;
-      card.style.transform = `perspective(1200px) rotateY(${x}deg) rotateX(${-y}deg) translateY(-8px) scale(1.02)`;
-    });
-    card.addEventListener('mouseleave', () => { card.style.transform = ''; });
-  });
-
-  // ── Diya Flame Canvas ──
-  (function initDiya() {
-    const canvas = document.getElementById('diya-canvas');
-    if (!canvas) return;
-    const ctx    = canvas.getContext('2d');
-    const W      = canvas.width  = canvas.parentElement.offsetWidth  || window.innerWidth;
-    const H      = canvas.height = canvas.parentElement.offsetHeight || window.innerHeight;
-    const particles = [];
-
-    for (let i = 0; i < 60; i++) {
-      particles.push({
-        x: Math.random() * W,
-        y: H + Math.random() * H,
-        radius: 1.5 + Math.random() * 2.5,
-        speedY: 0.4 + Math.random() * 0.8,
-        drift:  (Math.random() - 0.5) * 0.4,
-        hue:    Math.random() > 0.5 ? 30 : 340,
-        life:   Math.random()
-      });
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, W, H);
-      particles.forEach(p => {
-        p.y    -= p.speedY;
-        p.x    += p.drift;
-        p.life -= 0.004;
-        if (p.life <= 0 || p.y < -20) {
-          p.x    = Math.random() * W;
-          p.y    = H + 10;
-          p.life = 0.7 + Math.random() * 0.3;
-        }
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-        ctx.fillStyle = `hsla(${p.hue},100%,60%,${p.life * 0.6})`;
-        ctx.shadowBlur  = 12;
-        ctx.shadowColor = `hsl(${p.hue},100%,55%)`;
-        ctx.fill();
-      });
-      requestAnimationFrame(draw);
-    }
-    draw();
-  })();
-
-  // ── Lotus Petal Particles ──
-  (function spawnPetals() {
-    const petals  = ['🪷','🌸','🌺','🌼'];
-    const cnt     = document.getElementById('petals-container');
-    if (!cnt) return;
-    for (let i = 0; i < 10; i++) {
-      const el = document.createElement('span');
-      el.className   = 'petal';
-      el.textContent = petals[Math.floor(Math.random() * petals.length)];
-      el.style.left      = Math.random() * 100 + 'vw';
-      el.style.bottom    = (Math.random() * -20 - 5) + 'vh';
-      el.style.opacity   = 0.5 + Math.random() * 0.5;
-      el.style.fontSize  = (0.8 + Math.random() * 0.8) + 'rem';
-      el.style.animationDuration  = (10 + Math.random() * 18) + 's';
-      el.style.animationDelay     = (Math.random() * 15) + 's';
-      cnt.appendChild(el);
-    }
-  })();
-  </script>
 </body>
 </html>

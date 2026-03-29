@@ -1,0 +1,64 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="airavat-bg" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(180 154) rotate(50) scale(360)">
+      <stop stop-color="#2D2156"/>
+      <stop offset="1" stop-color="#110D21"/>
+    </radialGradient>
+    <linearGradient id="airavat-gold" x1="118" y1="98" x2="398" y2="414" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFE7A0"/>
+      <stop offset="0.48" stop-color="#D8B461"/>
+      <stop offset="1" stop-color="#8F6721"/>
+    </linearGradient>
+    <linearGradient id="airavat-rim" x1="110" y1="110" x2="402" y2="402" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFF1C2"/>
+      <stop offset="1" stop-color="#A97A27"/>
+    </linearGradient>
+    <filter id="airavat-shadow" x="62" y="62" width="388" height="388" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000000" flood-opacity="0.24"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#airavat-shadow)">
+    <circle cx="256" cy="256" r="184" fill="url(#airavat-bg)"/>
+    <circle cx="256" cy="256" r="176" stroke="url(#airavat-rim)" stroke-width="6"/>
+    <circle cx="256" cy="256" r="154" stroke="rgba(255,231,160,0.18)" stroke-width="2"/>
+  </g>
+
+  <g stroke="url(#airavat-gold)" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M174 138L156 122L130 134L142 158L170 154"/>
+    <path d="M338 138L356 122L382 134L370 158L342 154"/>
+    <path d="M178 366L156 380L164 406L192 404L198 378"/>
+    <path d="M334 366L356 380L348 406L320 404L314 378"/>
+    <path d="M186 130L214 110H298L326 130"/>
+    <path d="M212 110V90"/>
+    <path d="M256 110V82"/>
+    <path d="M300 110V90"/>
+    <path d="M144 146H102"/>
+    <path d="M368 146H410"/>
+    <path d="M182 378H142"/>
+    <path d="M330 378H370"/>
+  </g>
+
+  <g stroke="url(#airavat-gold)" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M174 176C144 142 104 140 88 178C74 214 96 250 144 256"/>
+    <path d="M338 176C368 142 408 140 424 178C438 214 416 250 368 256"/>
+    <path d="M172 196C190 162 222 144 256 144C290 144 322 162 340 196"/>
+    <path d="M194 194C186 228 188 258 202 290C214 318 234 344 256 362C278 344 298 318 310 290C324 258 326 228 318 194"/>
+    <path d="M224 194C238 184 248 180 256 180C264 180 274 184 288 194"/>
+    <path d="M218 228C232 220 244 216 256 216C268 216 280 220 294 228"/>
+    <path d="M210 256C228 246 244 242 256 242C268 242 284 246 302 256"/>
+    <path d="M224 280C238 274 248 272 256 272C264 272 274 274 288 280"/>
+    <path d="M230 306C240 302 248 300 256 300C264 300 272 302 282 306"/>
+    <path d="M224 322C232 340 238 360 238 386"/>
+    <path d="M288 322C280 340 274 360 274 386"/>
+    <path d="M248 320V390"/>
+    <path d="M264 320V390"/>
+    <path d="M172 196C160 232 160 272 172 308C180 332 196 350 216 364"/>
+    <path d="M340 196C352 232 352 272 340 308C332 332 316 350 296 364"/>
+  </g>
+
+  <g fill="#FFECC0">
+    <circle cx="228" cy="204" r="5"/>
+    <circle cx="284" cy="204" r="5"/>
+  </g>
+</svg>
