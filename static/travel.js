@@ -1,43 +1,12 @@
 document.addEventListener('DOMContentLoaded', () => {
   const nav = document.getElementById('main-nav');
-  const menuToggle = document.getElementById('menu-toggle');
-  const navLinks = document.getElementById('nav-links');
   const gitaBar = document.getElementById('gita-quote-bar');
   const hero = document.getElementById('hero-section');
+  const heroBg = document.getElementById('mayurya-bg');
   const pagePetals = document.getElementById('petals-container');
-  const heroScenes = Array.from(document.querySelectorAll('.hero-scene'));
-  const heroSceneTitle = document.getElementById('hero-scene-title');
-  const heroSceneCopy = document.getElementById('hero-scene-copy');
-  const heroSceneDots = Array.from(document.querySelectorAll('.hero-scene-dot'));
+  const menuToggle = document.getElementById('menu-toggle');
+  const navLinks = document.getElementById('nav-links');
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (nav) {
-    let lastScrollY = window.scrollY;
-    window.addEventListener('scroll', () => {
-      const currentY = window.scrollY;
-      const heroThreshold = hero ? hero.offsetHeight * 0.12 : 90;
-      nav.classList.toggle('scrolled', currentY > heroThreshold);
-
-      if (currentY > lastScrollY + 6 && currentY > 120) {
-        nav.classList.add('nav-hidden');
-      } else if (currentY < lastScrollY - 4 || currentY <= 24) {
-        nav.classList.remove('nav-hidden');
-      }
-
-      if (gitaBar) {
-        gitaBar.classList.toggle('gita-soft-scrolled', currentY > 24);
-      }
-
-      lastScrollY = currentY;
-    }, { passive: true });
-  }
-
-  if (menuToggle && navLinks) {
-    menuToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
-    navLinks.querySelectorAll('a').forEach((anchor) => {
-      anchor.addEventListener('click', () => navLinks.classList.remove('open'));
-    });
-  }
 
   const fab = document.getElementById('chatbot-fab');
   const panel = document.getElementById('chatbot-panel');
@@ -47,6 +16,67 @@ document.addEventListener('DOMContentLoaded', () => {
   const sendBtn = document.getElementById('chatbot-send');
   const msgBox = document.getElementById('chatbot-msgs');
   const suggestionButtons = Array.from(document.querySelectorAll('[data-chat-prompt]'));
+
+  const heroMotion = {
+    scrollOffset: 0,
+    moveX: 0,
+    moveY: 0,
+  };
+
+  function syncHeroBg() {
+    if (!heroBg) return;
+    heroBg.style.transform = `scale(1.08) translate3d(${heroMotion.moveX}px, ${heroMotion.moveY + heroMotion.scrollOffset}px, 0)`;
+  }
+
+  if (nav) {
+    let lastScrollY = window.scrollY;
+    window.addEventListener('scroll', () => {
+      const currentY = window.scrollY;
+      const heroHeight = hero ? hero.offsetHeight * 0.15 : 120;
+      nav.classList.toggle('scrolled', currentY > heroHeight);
+
+      if (currentY > lastScrollY + 6 && currentY > 110) {
+        nav.classList.add('nav-hidden');
+      } else if (currentY < lastScrollY - 4 || currentY <= 24) {
+        nav.classList.remove('nav-hidden');
+      }
+
+      if (gitaBar) {
+        gitaBar.classList.toggle('gita-soft-scrolled', currentY > 24);
+      }
+
+      if (heroBg) {
+        heroMotion.scrollOffset = Math.max(-18, currentY * -0.06);
+        syncHeroBg();
+      }
+
+      lastScrollY = currentY;
+    }, { passive: true });
+  }
+
+  if (hero && heroBg && !prefersReducedMotion) {
+    hero.addEventListener('mousemove', (event) => {
+      const rect = hero.getBoundingClientRect();
+      const offsetX = (event.clientX - rect.left - rect.width / 2) / rect.width;
+      const offsetY = (event.clientY - rect.top - rect.height / 2) / rect.height;
+      heroMotion.moveX = offsetX * 14;
+      heroMotion.moveY = offsetY * 12;
+      syncHeroBg();
+    });
+
+    hero.addEventListener('mouseleave', () => {
+      heroMotion.moveX = 0;
+      heroMotion.moveY = 0;
+      syncHeroBg();
+    });
+  }
+
+  if (menuToggle && navLinks) {
+    menuToggle.addEventListener('click', () => navLinks.classList.toggle('open'));
+    navLinks.querySelectorAll('a').forEach((anchor) => {
+      anchor.addEventListener('click', () => navLinks.classList.remove('open'));
+    });
+  }
 
   function appendMsg(text, who) {
     if (!msgBox) return;
@@ -86,8 +116,12 @@ document.addEventListener('DOMContentLoaded', () => {
       text: 'Hi, I am Mayurya. Ask me about destinations, itineraries, safety, or how SAFAR works.',
     },
     {
-      match: /how.*work|what can you do|help/i,
-      text: 'I can help with trip ideas, destination highlights, safety features, travel groups, and planning prompts.',
+      match: /destination|jaipur|manali|goa|kerala|varanasi|ladakh|agra|shimla/i,
+      text: 'Popular picks on SAFAR include Jaipur for heritage, Manali for mountain trips, Goa for quick coastal escapes, Kerala for scenic slow travel, and Varanasi for spiritual exploration.',
+    },
+    {
+      match: /plan|itinerary|trip|budget/i,
+      text: 'Start with destination, travel dates, group size, and budget. Mayurya can then shape route ideas, stay length, and activity priorities from that brief.',
     },
     {
       match: /join.*group|travel group/i,
@@ -102,15 +136,7 @@ document.addEventListener('DOMContentLoaded', () => {
       text: 'SAFAR includes live safety tracking, monitored zones, anomaly alerts, and a quick panic pathway from the safety dashboard.',
     },
     {
-      match: /destination|jaipur|manali|goa|kerala|varanasi|ladakh|agra|shimla/i,
-      text: 'Popular picks on SAFAR include Jaipur for heritage, Manali for mountain trips, Goa for quick coastal escapes, Kerala for scenic slow travel, and Varanasi for spiritual exploration.',
-    },
-    {
-      match: /plan|itinerary|trip|budget/i,
-      text: 'Start with destination, travel dates, group size, and budget. Mayurya can then shape route ideas, stay length, and activity priorities from that brief.',
-    },
-    {
-      match: /hindi|sanskrit|english|language|translate/i,
+      match: /language|english|hindi|sanskrit|translate/i,
       text: 'Use the language toggle in the navbar to switch the Mayurya page between English, Hindi, and Sanskrit.',
     },
   ];
@@ -123,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
       window.setTimeout(() => {
         hideTyping();
         appendMsg(localReply.text, 'bot');
-      }, 450);
+      }, 420);
       return;
     }
 
@@ -141,12 +167,13 @@ document.addEventListener('DOMContentLoaded', () => {
           appendMsg('This preview build does not have the live Mayurya API connected, but I can still help with destinations, groups, safety, and trip-planning basics here.', 'bot');
           return;
         }
+
         let errorMessage = "Sorry, I couldn't process that right now.";
         try {
           const errorBody = await response.json();
           errorMessage = errorBody.error || errorMessage;
         } catch (_) {
-          // Ignore JSON parse failures and use the default message.
+          // Ignore JSON parse failures and use default text.
         }
         appendMsg(errorMessage, 'bot');
         return;
@@ -168,6 +195,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (input) input.value = '';
     getBotResponse(text);
   }
+
+  window.askBot = function askBot(question) {
+    if (!panel || !input) return;
+    panel.classList.add('open');
+    input.value = question;
+    input.focus();
+    sendMessage(question);
+  };
 
   if (fab && panel) {
     fab.addEventListener('click', () => {
@@ -251,7 +286,7 @@ document.addEventListener('DOMContentLoaded', () => {
         entry.target.classList.add('active', 'visible');
       }
     });
-  }, { threshold: 0.15, rootMargin: '0px 0px -50px 0px' });
+  }, { threshold: 0.14, rootMargin: '0px 0px -40px 0px' });
 
   document.querySelectorAll('.reveal, .hero-v2').forEach((element) => revealObserver.observe(element));
 
@@ -287,71 +322,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  (function initHeroScenes() {
-    if (!heroScenes.length) return;
-
-    let activeSceneIndex = heroScenes.findIndex((scene) => scene.classList.contains('active'));
-    if (activeSceneIndex < 0) activeSceneIndex = 0;
-    let intervalId = 0;
-
-    function currentLang() {
-      return document.body?.dataset.lang || document.documentElement.lang || 'en';
-    }
-
-    function syncScene(index) {
-      const normalizedIndex = (index + heroScenes.length) % heroScenes.length;
-      activeSceneIndex = normalizedIndex;
-
-      heroScenes.forEach((scene, sceneIndex) => {
-        scene.classList.toggle('active', sceneIndex === normalizedIndex);
-      });
-
-      heroSceneDots.forEach((dot, dotIndex) => {
-        dot.classList.toggle('active', dotIndex === normalizedIndex);
-      });
-
-      const activeScene = heroScenes[normalizedIndex];
-      const lang = currentLang();
-      const title =
-        activeScene.dataset[`sceneTitle${lang.charAt(0).toUpperCase()}${lang.slice(1)}`] ||
-        activeScene.dataset.sceneTitle ||
-        '';
-      const copy =
-        activeScene.dataset[`sceneCopy${lang.charAt(0).toUpperCase()}${lang.slice(1)}`] ||
-        activeScene.dataset.sceneCopy ||
-        '';
-      if (heroSceneTitle) heroSceneTitle.textContent = title;
-      if (heroSceneCopy) heroSceneCopy.textContent = copy;
-    }
-
-    function startRotation() {
-      if (prefersReducedMotion || heroScenes.length < 2) return;
-      intervalId = window.setInterval(() => {
-        syncScene(activeSceneIndex + 1);
-      }, 5000);
-    }
-
-    heroSceneDots.forEach((dot) => {
-      dot.addEventListener('click', () => {
-        const nextIndex = parseInt(dot.dataset.sceneIndex || '0', 10);
-        syncScene(nextIndex);
-        if (intervalId) {
-          window.clearInterval(intervalId);
-          startRotation();
-        }
-      });
-    });
-
-    syncScene(activeSceneIndex);
-    startRotation();
-
-    document.querySelectorAll('#lang-toggle-btn').forEach((button) => {
-      button.addEventListener('click', () => {
-        window.setTimeout(() => syncScene(activeSceneIndex), 240);
-      });
-    });
-  })();
-
   (function initMayuryaCanvas() {
     const canvas = document.getElementById('mayurya-shard-canvas');
     if (!canvas || prefersReducedMotion) return;
@@ -368,7 +338,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildParticles() {
       particles.length = 0;
-      for (let index = 0; index < 70; index += 1) {
+      for (let index = 0; index < 72; index += 1) {
         particles.push({
           x: Math.random() * width,
           y: Math.random() * height,
@@ -419,7 +389,7 @@ document.addEventListener('DOMContentLoaded', () => {
       petal.className = 'petal page-petal';
       petal.textContent = '✦';
       petal.style.left = `${Math.random() * 100}vw`;
-      petal.style.bottom = `${Math.random() * 40 - 20}vh`;
+      petal.style.bottom = `${Math.random() * 44 - 20}vh`;
       petal.style.opacity = `${0.2 + Math.random() * 0.45}`;
       petal.style.fontSize = `${0.8 + Math.random() * 1.2}rem`;
       petal.style.animationDuration = `${10 + Math.random() * 14}s`;

@@ -1,0 +1,222 @@
+- generic [active] [ref=e1]:
+  - generic:
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+    - generic: ✦
+  - generic [ref=e2] [cursor=pointer]:
+    - generic [ref=e3]: 📖
+    - generic [ref=e4]:
+      - generic [ref=e5]: उद्धरेदात्मनात्मानं नात्मानमवसादयेत्।...
+      - generic [ref=e6]: ·
+      - generic [ref=e7]: Lift yourself by your own mind; the mind can be your greatest friend or enemy.
+    - generic [ref=e8]: Bhagavad Gita 6.5
+    - generic [ref=e9]: click to expand
+  - navigation [ref=e10]:
+    - link "SAFAR" [ref=e11] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e12]: SAFAR
+    - generic [ref=e13]:
+      - link "Home" [ref=e14] [cursor=pointer]:
+        - /url: /
+      - link "Groups" [ref=e15] [cursor=pointer]:
+        - /url: /groups
+      - link "Identity Ledger" [ref=e16] [cursor=pointer]:
+        - /url: /blockchain
+      - link "AI Assistant" [ref=e17] [cursor=pointer]:
+        - /url: /travel
+      - link "About" [ref=e18] [cursor=pointer]:
+        - /url: /about
+      - link "Login" [ref=e20] [cursor=pointer]:
+        - /url: /auth
+      - link "Get Started" [ref=e21] [cursor=pointer]:
+        - /url: /auth
+      - button "🇮🇳 EN" [ref=e22] [cursor=pointer]:
+        - generic [ref=e23]: 🇮🇳
+        - generic [ref=e24]: EN
+  - generic [ref=e36]:
+    - generic [ref=e37]:
+      - generic [ref=e38]: Mayurya Intelligence System
+      - heading "Plan, ask, and travel with Mayurya." [level=1] [ref=e39]
+      - paragraph [ref=e40]: Mayurya brings destination discovery, itinerary help, safety guidance, and platform answers into one multilingual travel cockpit.
+      - generic [ref=e41]:
+        - generic [ref=e42]:
+          - generic [ref=e43]: "3"
+          - generic [ref=e44]: Languages
+        - generic [ref=e45]:
+          - generic [ref=e46]: 24/7
+          - generic [ref=e47]: Travel Support
+        - generic [ref=e48]:
+          - generic [ref=e49]: "1"
+          - generic [ref=e50]: Unified Assistant
+      - generic [ref=e51]:
+        - generic [ref=e52]: English
+        - generic [ref=e53]: Hindi
+        - generic [ref=e54]: Sanskrit
+      - generic [ref=e55]:
+        - button " Open Mayurya Chat" [ref=e56] [cursor=pointer]:
+          - generic [ref=e57]: 
+          - generic [ref=e58]: Open Mayurya Chat
+        - link " Explore Trips" [ref=e59] [cursor=pointer]:
+          - /url: /groups
+          - generic [ref=e60]: 
+          - generic [ref=e61]: Explore Trips
+      - generic [ref=e62]:
+        - generic [ref=e63]: Now Showing
+        - generic [ref=e64]: Jaipur Heritage
+        - paragraph [ref=e65]: Culture-rich routes, city exploration, and fast answers for first-time visits.
+        - generic "Mayurya background selector" [ref=e66]:
+          - button "Show Mayurya Canvas" [ref=e67] [cursor=pointer]
+          - button "Show Jaipur Heritage" [ref=e68] [cursor=pointer]
+          - button "Show Goa Coastline" [ref=e69] [cursor=pointer]
+          - button "Show Kerala Retreat" [ref=e70] [cursor=pointer]
+    - generic [ref=e72]:
+      - img "Mayurya AI peacock emblem" [ref=e73]
+      - generic [ref=e74]:
+        - generic [ref=e75]: Live Assistant Interface
+        - strong [ref=e76]: Mayurya Core
+        - paragraph [ref=e77]: Inspired by peacock plumage, tuned for discovery, safety, and group planning.
+  - generic [ref=e79]:
+    - generic [ref=e80]:
+      - generic [ref=e81]: Live Travel Copilot
+      - heading "A clearer assistant interface, built for fast questions." [level=2] [ref=e82]
+      - paragraph [ref=e83]: Use the floating panel for instant answers, or jump in through the quick actions below to start with a destination, safety question, or trip brief.
+    - button " Launch Assistant" [ref=e85] [cursor=pointer]:
+      - generic [ref=e86]: 
+      - generic [ref=e87]: Launch Assistant
+  - generic [ref=e88]:
+    - generic [ref=e89]:
+      - generic [ref=e90]: Quick Actions
+      - heading "How can Mayurya help you?" [level=2] [ref=e91]
+      - paragraph [ref=e92]: Pick a starting point or ask anything directly in the chat.
+    - generic [ref=e93]:
+      - button "🗺️ Explore Destinations Discover the best places to visit across India with insider tips." [ref=e94] [cursor=pointer]:
+        - generic [ref=e95]: 🗺️
+        - heading "Explore Destinations" [level=4] [ref=e96]
+        - paragraph [ref=e97]: Discover the best places to visit across India with insider tips.
+      - button "🛡️ Safety Tips Understand SAFAR's safety features and smarter travel habits." [ref=e98] [cursor=pointer]:
+        - generic [ref=e99]: 🛡️
+        - heading "Safety Tips" [level=4] [ref=e100]
+        - paragraph [ref=e101]: Understand SAFAR's safety features and smarter travel habits.
+      - button "👥 Travel Squads Create, join, and manage travel groups with less friction." [ref=e102] [cursor=pointer]:
+        - generic [ref=e103]: 👥
+        - heading "Travel Squads" [level=4] [ref=e104]
+        - paragraph [ref=e105]: Create, join, and manage travel groups with less friction.
+      - button "📋 Trip Planning Ask for itineraries, route ideas, and better sequencing for your trip." [ref=e106] [cursor=pointer]:
+        - generic [ref=e107]: 📋
+        - heading "Trip Planning" [level=4] [ref=e108]
+        - paragraph [ref=e109]: Ask for itineraries, route ideas, and better sequencing for your trip.
+  - generic [ref=e110]:
+    - generic [ref=e111]:
+      - generic [ref=e112]: Trending Now
+      - heading "Popular destinations Mayurya can help plan." [level=2] [ref=e113]
+      - paragraph [ref=e114]: Use these as starting prompts, then refine dates, budgets, or group size in chat.
+    - generic [ref=e115]:
+      - link "Manali Manali" [ref=e116] [cursor=pointer]:
+        - /url: /groups
+        - img "Manali" [ref=e117]
+        - generic [ref=e118]: Manali
+      - link "Goa Goa" [ref=e119] [cursor=pointer]:
+        - /url: /groups
+        - img "Goa" [ref=e120]
+        - generic [ref=e121]: Goa
+      - link "Jaipur Jaipur" [ref=e122] [cursor=pointer]:
+        - /url: /groups
+        - img "Jaipur" [ref=e123]
+        - generic [ref=e124]: Jaipur
+      - link "Kerala Kerala" [ref=e125] [cursor=pointer]:
+        - /url: /groups
+        - img "Kerala" [ref=e126]
+        - generic [ref=e127]: Kerala
+      - link "Varanasi Varanasi" [ref=e128] [cursor=pointer]:
+        - /url: /groups
+        - img "Varanasi" [ref=e129]
+        - generic [ref=e130]: Varanasi
+      - link "🏔️ Ladakh" [ref=e131] [cursor=pointer]:
+        - /url: /groups
+        - generic [ref=e132]: 🏔️ Ladakh
+      - link "🏛️ Agra" [ref=e133] [cursor=pointer]:
+        - /url: /groups
+        - generic [ref=e134]: 🏛️ Agra
+      - link "⛰️ Shimla" [ref=e135] [cursor=pointer]:
+        - /url: /groups
+        - generic [ref=e136]: ⛰️ Shimla
+  - contentinfo [ref=e137]:
+    - generic [ref=e138]:
+      - generic [ref=e139]:
+        - generic [ref=e140]: SAFAR
+        - paragraph [ref=e141]: India's first AI-powered group travel platform with real-time tourist safety.
+        - generic [ref=e142]:
+          - link "Twitter" [ref=e143] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e144]: 
+          - link "Instagram" [ref=e145] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e146]: 
+          - link "GitHub" [ref=e147] [cursor=pointer]:
+            - /url: "#"
+            - generic [ref=e148]: 
+      - generic [ref=e149]:
+        - heading "Quick Links" [level=4] [ref=e150]
+        - link "Home" [ref=e151] [cursor=pointer]:
+          - /url: /
+        - link "Find Groups" [ref=e152] [cursor=pointer]:
+          - /url: /groups
+        - link "AI Assistant" [ref=e153] [cursor=pointer]:
+          - /url: /travel
+        - link "About" [ref=e154] [cursor=pointer]:
+          - /url: /about
+      - generic [ref=e155]:
+        - heading "Safety" [level=4] [ref=e156]
+        - link "Safety Dashboard" [ref=e157] [cursor=pointer]:
+          - /url: /profile
+        - link "Register Tourist" [ref=e158] [cursor=pointer]:
+          - /url: /auth
+      - generic [ref=e159]:
+        - heading "Resources" [level=4] [ref=e160]
+        - link "Travel Tips" [ref=e161] [cursor=pointer]:
+          - /url: "#"
+        - link "Emergency Contacts" [ref=e162] [cursor=pointer]:
+          - /url: "#"
+    - paragraph [ref=e164]: © 2025 SAFAR - Built with care by Team Safar
+  - button "Open Mayurya assistant" [ref=e165] [cursor=pointer]:
+    - img [ref=e167]
+    - generic [ref=e169]:
+      - strong [ref=e170]: Mayurya
+      - generic [ref=e171]: Ask anything
+  - generic [ref=e172]:
+    - generic [ref=e173]:
+      - generic [ref=e174]:
+        - generic [ref=e177]: Live assistant
+        - heading "Mayurya AI" [level=3] [ref=e178]
+        - paragraph [ref=e179]: Travel planning, safety answers, and platform guidance in one place.
+      - generic [ref=e180]:
+        - button "Clear chat" [ref=e181] [cursor=pointer]: ↺
+        - button "Close chat" [ref=e182] [cursor=pointer]: ✕
+    - generic [ref=e183]:
+      - button "3-day Jaipur itinerary" [ref=e184] [cursor=pointer]
+      - button "Goa safety tips" [ref=e185] [cursor=pointer]
+      - button "Join a travel group" [ref=e186] [cursor=pointer]
+    - paragraph [ref=e189]: Hi, I'm Mayurya. Ask me about destinations, itineraries, safety, or how to use SAFAR.
+    - generic [ref=e190]:
+      - textbox "Ask me anything about travel..." [ref=e191]
+      - button "Send message" [ref=e192] [cursor=pointer]:
+        - img [ref=e193]

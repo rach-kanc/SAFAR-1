@@ -4,15 +4,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>AI Travel Assistant — SAFAR</title>
-  <meta name="description" content="SAFAR AI — your personal travel assistant for destinations, safety tips, group travel advice, and personalized itinerary planning.">
+  <title>Mayurya AI Assistant - SAFAR</title>
+  <meta name="description"
+    content="Mayurya is SAFAR's multilingual travel intelligence system for destinations, safety guidance, itineraries, and group travel support.">
   <link rel="stylesheet" href="/static/travel.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
 <body class="travel-page" data-lang="en">
+  <div id="petals-container"></div>
 
-  <!-- Gita Bar -->
   <div class="gita-bar" id="gita-quote-bar">
     <span class="gita-bar-icon">📖</span>
     <div class="gita-bar-text">
@@ -21,6 +22,7 @@
       <span class="gita-translation"></span>
     </div>
     <span class="gita-ref"></span>
+    <span class="gita-hint" data-i18n="gita.hint">click to expand</span>
   </div>
 
   <nav class="navbar navbar-with-bar" id="main-nav">
@@ -33,179 +35,286 @@
       <a href="/about" data-i18n="nav.about">About</a>
       <div class="nav-divider"></div>
       {% if username %}
-        <a href="/user" class="nav-badge">👤 {{username}}</a>
-        <a href="/profile" class="nav-badge ast" data-i18n="nav.safety">🛡️ Safety</a>
-        <a href="/api/auth/logout" class="btn-nav btn-nav-outline" data-i18n="nav.logout">Logout</a>
+      <a href="/user" class="nav-badge">👤 {{username}}</a>
+      <a href="/profile" class="nav-badge ast" data-i18n="nav.safety">🛡️ Safety</a>
+      <a href="/api/auth/logout" class="btn-nav btn-nav-outline" data-i18n="nav.logout">Logout</a>
       {% else %}
-        <a href="/auth" class="btn-nav btn-nav-outline" data-i18n="nav.login">Login</a>
-        <a href="/auth" class="btn-nav btn-nav-fill" data-i18n="nav.getstarted">Get Started</a>
+      <a href="/auth" class="btn-nav btn-nav-outline" data-i18n="nav.login">Login</a>
+      <a href="/auth" class="btn-nav btn-nav-fill" data-i18n="nav.getstarted">Get Started</a>
       {% endif %}
-      <button id="lang-toggle-btn" title="Toggle Language"><span class="lang-flag">🇯🇳</span><span class="lang-label">EN</span></button>
+      <button id="lang-toggle-btn" title="Toggle Language">
+        <span class="lang-flag">🇮🇳</span>
+        <span class="lang-label">EN</span>
+      </button>
     </div>
     <button class="menu-toggle" id="menu-toggle"><span></span><span></span><span></span></button>
   </nav>
 
-  <!-- Majestic Peacock 3D Parallax Section for AI Features -->
-  <div class="peacock-hero" data-tilt style="position:relative; height: 60vh; display:flex; align-items:center; justify-content:center; perspective: 1200px; overflow:hidden; border-bottom: 1px solid var(--border); cursor: none;">
-     <div class="peacock-bg" style="position:absolute; inset:0; background: radial-gradient(circle at center, rgba(6, 182, 212, 0.15), transparent 70%); z-index:1;"></div>
-     <img src="/static/images/peacock.png" id="peacock-mascot" class="reveal active" style="height: 120%; object-fit:contain; z-index:2; filter: drop-shadow(0 0 50px rgba(6, 182, 212, 0.4));" alt="">
-  </div>
+  <section class="hero-v2 mayurya-hero" id="hero-section">
+    <div class="mayurya-bg" id="mayurya-bg" aria-hidden="true"></div>
+    <div class="mayurya-overlay" aria-hidden="true"></div>
+    <div class="mayurya-grade" aria-hidden="true"></div>
+    <div class="mayurya-glow" aria-hidden="true"></div>
 
-  <div class="travel-hero">
-    <div class="travel-hero-text">
-      <span class="section-tag section-tag-tt">AI-Powered</span>
-      <h1>Your Personal Travel Intelligence</h1>
-      <p>Ask about destinations, get AI-curated itineraries, understand safety tools, or plan your next group trip — SAFAR AI is ready to help you travel smarter.</p>
-      <button class="btn btn-tt btn-lg"
-        onclick="document.getElementById('chatbot-panel').classList.add('open');document.getElementById('chatbot-input').focus()">
-        <i class="fas fa-robot"></i> Start Chatting Now →
-      </button>
+    <div class="mandala-bg mayurya-mandala" aria-hidden="true">
+      <canvas id="mayurya-shard-canvas"></canvas>
     </div>
-    <div class="travel-visual">🤖</div>
-  </div>
 
-  <!-- Quick Action Cards -->
-  <section style="padding: 0 0 60px;">
-    <div class="section-header">
-      <span class="section-tag section-tag-tt">Quick Actions</span>
-      <h2>How Can I Help You?</h2>
-      <p>Pick a topic or ask me anything in the chat</p>
-    </div>
-    <div class="travel-actions">
-      <div class="travel-action-card" id="ta-destinations" onclick="askBot('Tell me about the most popular travel destinations in India')">
-        <span class="ta-icon">🗺️</span>
-        <h4>Explore Destinations</h4>
-        <p>Discover the best places to visit across India with insider tips</p>
+    <div class="hero-v2-content mayurya-hero-content">
+      <div class="hero-v2-left mayurya-hero-copy reveal">
+        <span class="section-tag section-tag-tt" data-i18n="mayurya.hero.tag">Mayurya Intelligence System</span>
+        <h1 data-i18n="mayurya.hero.title">Plan, ask, and travel with Mayurya.</h1>
+        <p data-i18n="mayurya.hero.desc">Mayurya brings destination discovery, itinerary help, safety guidance, and
+          platform answers into one multilingual travel cockpit.</p>
+
+        <div class="hero-v2-stats mayurya-hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-num">3</span>
+            <span class="hero-stat-label" data-i18n="mayurya.hero.stat.languages">Languages</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">24/7</span>
+            <span class="hero-stat-label" data-i18n="mayurya.hero.stat.support">Travel Support</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">1</span>
+            <span class="hero-stat-label" data-i18n="mayurya.hero.stat.interface">Unified Assistant</span>
+          </div>
+        </div>
+
+        <div class="mayurya-language-strip">
+          <span class="mayurya-language-pill" data-i18n="mayurya.language.english">English</span>
+          <span class="mayurya-language-pill" data-i18n="mayurya.language.hindi">हिंदी</span>
+          <span class="mayurya-language-pill" data-i18n="mayurya.language.sanskrit">संस्कृतम्</span>
+        </div>
+
+        <div class="mayurya-hero-actions">
+          <button class="btn btn-tt btn-lg" type="button"
+            onclick="document.getElementById('chatbot-panel').classList.add('open');document.getElementById('chatbot-input').focus()">
+            <i class="fas fa-robot"></i>
+            <span data-i18n="mayurya.hero.cta.chat">Open Mayurya Chat</span>
+          </button>
+          <a href="/groups" class="btn btn-ghost btn-lg">
+            <i class="fas fa-compass"></i>
+            <span data-i18n="mayurya.hero.cta.groups">Explore Trips</span>
+          </a>
+        </div>
       </div>
-      <div class="travel-action-card" id="ta-safety" onclick="askBot('What safety tips should I know while traveling in India?')">
-        <span class="ta-icon">🛡️</span>
-        <h4>Safety Tips</h4>
-        <p>Learn how to stay safe with SAFAR's real-time safety features</p>
-      </div>
-      <div class="travel-action-card" id="ta-groups" onclick="askBot('How do I create or join a travel group on SAFAR?')">
-        <span class="ta-icon">👥</span>
-        <h4>Travel Squads</h4>
-        <p>Get help creating, joining, and managing your travel groups</p>
-      </div>
-      <div class="travel-action-card" id="ta-planning" onclick="askBot('Help me plan a 5-day trip to Manali')">
-        <span class="ta-icon">📋</span>
-        <h4>Trip Planning</h4>
-        <p>Let AI craft a personalized itinerary for your next adventure</p>
+
+      <div class="hero-v2-right mayurya-hero-visual reveal reveal-delay-1">
+        <div class="mayurya-art-frame card-3d" data-tilt>
+          <div class="mayurya-art-grid" aria-hidden="true"></div>
+          <div class="mayurya-art-glow" aria-hidden="true"></div>
+          <div class="mayurya-art-painting" aria-hidden="true"></div>
+          <img class="mayurya-art-emblem" src="/static/images/mayurya-system.svg" alt="Mayurya AI peacock emblem">
+          <div class="mayurya-art-caption">
+            <span class="mayurya-art-label" data-i18n="mayurya.art.label">Live Assistant Interface</span>
+            <strong data-i18n="mayurya.art.title">Mayurya Core</strong>
+            <p data-i18n="mayurya.art.copy">Inspired by peacock plumage, tuned for discovery, safety, and group
+              planning.</p>
+          </div>
+          <div class="mayurya-art-orbit mayurya-art-orbit-a" aria-hidden="true"></div>
+          <div class="mayurya-art-orbit mayurya-art-orbit-b" aria-hidden="true"></div>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- Trending Destinations -->
-  <section style="padding: 0 0 80px;">
-    <div class="section-header" style="margin-bottom:24px;">
-      <h2 style="font-size:1.3rem;">🔥 Trending Destinations</h2>
+  <section class="mayurya-quick-intel reveal">
+    <div class="mayurya-quick-intel-card">
+      <div class="mayurya-quick-intel-copy">
+        <span class="section-tag section-tag-tt" data-i18n="mayurya.live.tag">Live Travel Copilot</span>
+        <h2 data-i18n="mayurya.live.title">A clearer assistant interface, built for fast questions.</h2>
+        <p data-i18n="mayurya.live.desc">Use the floating panel for instant answers, or jump in through the quick
+          actions below to start with a destination, safety question, or trip brief.</p>
+      </div>
+      <div class="mayurya-quick-intel-actions">
+        <button class="btn btn-ghost" type="button"
+          onclick="document.getElementById('chatbot-panel').classList.add('open');document.getElementById('chatbot-input').focus()">
+          <i class="fas fa-comment-dots"></i>
+          <span data-i18n="mayurya.live.cta">Launch Assistant</span>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <section class="mayurya-section reveal">
+    <div class="section-header">
+      <span class="section-tag section-tag-tt" data-i18n="mayurya.actions.tag">Quick Actions</span>
+      <h2 data-i18n="mayurya.actions.title">How can Mayurya help you?</h2>
+      <p data-i18n="mayurya.actions.desc">Pick a starting point or ask anything directly in the chat.</p>
+    </div>
+    <div class="travel-actions">
+      <button class="travel-action-card" id="ta-destinations" type="button"
+        onclick="askBot('Tell me about the most popular travel destinations in India')">
+        <span class="ta-icon">🗺️</span>
+        <h4 data-i18n="mayurya.actions.destinations.title">Explore Destinations</h4>
+        <p data-i18n="mayurya.actions.destinations.copy">Discover the best places to visit across India with insider
+          tips.</p>
+      </button>
+      <button class="travel-action-card" id="ta-safety" type="button"
+        onclick="askBot('What safety tips should I know while traveling in India?')">
+        <span class="ta-icon">🛡️</span>
+        <h4 data-i18n="mayurya.actions.safety.title">Safety Tips</h4>
+        <p data-i18n="mayurya.actions.safety.copy">Understand SAFAR's safety features and smarter travel habits.</p>
+      </button>
+      <button class="travel-action-card" id="ta-groups" type="button"
+        onclick="askBot('How do I create or join a travel group on SAFAR?')">
+        <span class="ta-icon">👥</span>
+        <h4 data-i18n="mayurya.actions.groups.title">Travel Squads</h4>
+        <p data-i18n="mayurya.actions.groups.copy">Create, join, and manage travel groups with less friction.</p>
+      </button>
+      <button class="travel-action-card" id="ta-planning" type="button"
+        onclick="askBot('Help me plan a 5-day trip to Manali')">
+        <span class="ta-icon">📋</span>
+        <h4 data-i18n="mayurya.actions.planning.title">Trip Planning</h4>
+        <p data-i18n="mayurya.actions.planning.copy">Ask for itineraries, route ideas, and better sequencing for your
+          trip.</p>
+      </button>
+    </div>
+  </section>
+
+  <section class="mayurya-section reveal">
+    <div class="section-header mayurya-trending-header">
+      <span class="section-tag section-tag-tt" data-i18n="mayurya.trending.tag">Trending Now</span>
+      <h2 data-i18n="mayurya.trending.title">Popular destinations Mayurya can help plan.</h2>
+      <p data-i18n="mayurya.trending.desc">Use these as starting prompts, then refine dates, budgets, or group size in
+        chat.</p>
     </div>
     <div class="trending-dests">
       <a href="/groups" class="trending-dest-chip">
-        <img src="/static/images/dest_manali.png" alt="Manali"> Manali
+        <img src="/static/images/dest_manali.png" alt="Manali">
+        <span data-i18n="dest.manali">Manali</span>
       </a>
       <a href="/groups" class="trending-dest-chip">
-        <img src="/static/images/dest_goa.png" alt="Goa"> Goa
+        <img src="/static/images/dest_goa.png" alt="Goa">
+        <span data-i18n="dest.goa">Goa</span>
       </a>
       <a href="/groups" class="trending-dest-chip">
-        <img src="/static/images/dest_jaipur.png" alt="Jaipur"> Jaipur
+        <img src="/static/images/dest_jaipur.png" alt="Jaipur">
+        <span data-i18n="dest.jaipur">Jaipur</span>
       </a>
       <a href="/groups" class="trending-dest-chip">
-        <img src="/static/images/dest_kerala.png" alt="Kerala"> Kerala
+        <img src="/static/images/dest_kerala.png" alt="Kerala">
+        <span data-i18n="dest.kerala">Kerala</span>
       </a>
       <a href="/groups" class="trending-dest-chip">
-        <img src="/static/images/dest_varanasi.png" alt="Varanasi"> Varanasi
+        <img src="/static/images/dest_varanasi.png" alt="Varanasi">
+        <span data-i18n="dest.varanasi">Varanasi</span>
       </a>
-      <a href="/groups" class="trending-dest-chip">🏔️ Ladakh</a>
-      <a href="/groups" class="trending-dest-chip">🏛️ Agra</a>
-      <a href="/groups" class="trending-dest-chip">⛰️ Shimla</a>
+      <a href="/groups" class="trending-dest-chip">
+        <span data-i18n="dest.ladakh">🏔️ Ladakh</span>
+      </a>
+      <a href="/groups" class="trending-dest-chip">
+        <span data-i18n="dest.agra">🏛️ Agra</span>
+      </a>
+      <a href="/groups" class="trending-dest-chip">
+        <span data-i18n="dest.shimla">⛰️ Shimla</span>
+      </a>
     </div>
   </section>
 
-  <!-- Footer V2 -->
   <footer class="footer-v2">
     <div class="footer-v2-grid">
       <div class="footer-v2-brand">
         <div class="footer-logo"><span class="logo-safar">SAFAR</span></div>
-        <p>India's first AI-powered group travel platform with real-time tourist safety.</p>
+        <p data-i18n="footer.brand">India's first AI-powered group travel platform with real-time tourist safety.</p>
         <div class="footer-social">
-          <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
-          <a href="#" class="social-link"><i class="fab fa-instagram"></i></a>
-          <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+          <a href="#" class="social-link" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+          <a href="#" class="social-link" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+          <a href="#" class="social-link" aria-label="GitHub"><i class="fab fa-github"></i></a>
         </div>
       </div>
       <div class="footer-v2-col">
-        <h4>Quick Links</h4>
-        <a href="/">Home</a><a href="/groups">Find Groups</a><a href="/travel">AI Assistant</a><a href="/about">About Us</a>
+        <h4 data-i18n="footer.quick">Quick Links</h4>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/groups" data-i18n="footer.groups">Find Groups</a>
+        <a href="/travel" data-i18n="footer.ai">AI Assistant</a>
+        <a href="/about" data-i18n="nav.about">About</a>
       </div>
       <div class="footer-v2-col">
-        <h4>Safety</h4>
-        <a href="/profile">Safety Dashboard</a><a href="/auth">Register Tourist</a>
+        <h4 data-i18n="footer.safety.title">Safety</h4>
+        <a href="/profile" data-i18n="footer.safety.dashboard">Safety Dashboard</a>
+        <a href="/auth" data-i18n="footer.safety.register">Register Tourist</a>
       </div>
       <div class="footer-v2-col">
-        <h4>Resources</h4>
-        <a href="#">Travel Tips</a><a href="#">Emergency Contacts</a>
+        <h4 data-i18n="footer.resources.title">Resources</h4>
+        <a href="#" data-i18n="footer.resources.tips">Travel Tips</a>
+        <a href="#" data-i18n="footer.resources.emergency">Emergency Contacts</a>
       </div>
     </div>
     <div class="footer-v2-bottom">
-      <p>© 2025 SAFAR — Built with ❤️ by Team Safar</p>
+      <p data-i18n="footer.copy">© 2025 SAFAR - Built with care by Team Safar</p>
     </div>
   </footer>
 
-  <!-- Chatbot -->
-  <button class="chatbot-fab" id="chatbot-fab">
-    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-      <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
-    </svg>
+  <button class="chatbot-fab" id="chatbot-fab" aria-label="Open Mayurya assistant">
+    <span class="chatbot-fab-icon">
+      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z" />
+      </svg>
+    </span>
+    <span class="chatbot-fab-copy">
+      <strong data-i18n="chatbot.fab.title">Mayurya</strong>
+      <span data-i18n="chatbot.fab.copy">Ask anything</span>
+    </span>
   </button>
+
   <div class="chatbot-panel open" id="chatbot-panel">
     <div class="chatbot-header">
-      <h3>🤖 SAFAR AI</h3>
+      <div class="chatbot-header-copy">
+        <span class="chatbot-status"><span class="chatbot-status-dot"></span><span
+            data-i18n="chatbot.status">Live assistant</span></span>
+        <h3 data-i18n="chatbot.title">Mayurya AI</h3>
+        <p data-i18n="chatbot.subtitle">Travel planning, safety answers, and platform guidance in one place.</p>
+      </div>
       <div class="chatbot-header-btns">
-        <button id="chatbot-clear">↺</button>
-        <button id="chatbot-close">✕</button>
+        <button id="chatbot-clear" type="button" aria-label="Clear chat">↺</button>
+        <button id="chatbot-close" type="button" aria-label="Close chat">✕</button>
       </div>
     </div>
+
+    <div class="chatbot-suggestions">
+      <button class="chatbot-suggestion" type="button" data-chat-prompt="Suggest a 3-day Jaipur itinerary"
+        data-i18n="chatbot.suggestion.itinerary">3-day Jaipur itinerary</button>
+      <button class="chatbot-suggestion" type="button" data-chat-prompt="What safety tips should I know in Goa?"
+        data-i18n="chatbot.suggestion.safety">Goa safety tips</button>
+      <button class="chatbot-suggestion" type="button" data-chat-prompt="How do I join a travel group on SAFAR?"
+        data-i18n="chatbot.suggestion.groups">Join a travel group</button>
+    </div>
+
     <div class="chatbot-messages" id="chatbot-msgs">
       <div class="chat-msg bot">
-        <p>✈️ Hi! I'm SAFAR AI. I can help with destinations, travel planning, safety information, and group travel. What would you like to know?</p>
+        <p data-i18n="chatbot.greeting">Hi, I'm Mayurya. Ask me about destinations, itineraries, safety, or how to
+          use SAFAR.</p>
       </div>
     </div>
     <div class="chatbot-input-row">
-      <input type="text" id="chatbot-input" placeholder="Ask me anything about travel...">
-      <button class="chatbot-send" id="chatbot-send">
+      <input type="text" id="chatbot-input" data-i18n-placeholder="chatbot.placeholder"
+        placeholder="Ask me anything about travel...">
+      <button class="chatbot-send" id="chatbot-send" type="button" aria-label="Send message">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
           <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
         </svg>
       </button>
     </div>
   </div>
-  <script src="/static/script.js"></script>
-  <script>
-    // Parallax scroll effect for Peacock
-    window.addEventListener('scroll', () => {
-        const scrolled = window.scrollY;
-        const peacock = document.getElementById('peacock-mascot');
-        if (peacock && scrolled < window.innerHeight) {
-            const translateY = 20 - (scrolled * 0.18);
-            const scale = 1 + (scrolled * 0.00035);
-            peacock.style.transform = `translateZ(90px) translateY(${translateY}px) scale(${scale})`;
-        }
-    });
-  </script>
+
+  <div class="gita-modal-overlay" id="gita-full-modal">
+    <div class="gita-modal-box">
+      <div class="gita-modal-diya">🪔</div>
+      <div class="gita-modal-sanskrit"></div>
+      <div class="gita-modal-hindi"></div>
+      <div class="gita-modal-english"></div>
+      <div class="gita-modal-ref"></div>
+      <button class="gita-modal-close" type="button">✕ Close</button>
+    </div>
+  </div>
+
+  <script src="/static/travel.js"></script>
   <script src="/static/dictionary-agent.js"></script>
   <script src="/static/translator-core.js"></script>
   <script src="/static/translators/travel.translator.js"></script>
-  <script>
-  function askBot(question) {
-    const panel = document.getElementById('chatbot-panel');
-    const input = document.getElementById('chatbot-input');
-    panel.classList.add('open');
-    input.value = question;
-    input.focus();
-    document.getElementById('chatbot-send').click();
-  }
-  </script>
 </body>
 
 </html>
