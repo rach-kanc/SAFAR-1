@@ -658,6 +658,80 @@ def travel_page():
     user = get_current_user()
     return render_template('travel.html', username=user.username if user else None)
 
+
+# ─────────────────────────────────────────────
+# MAYURYA CHATBOT  (/api/chatbot)
+# Proxies user messages to the n8n AI agent webhook.
+# Keeps the webhook URL server-side so it never appears in client JS.
+# ─────────────────────────────────────────────
+
+N8N_WEBHOOK_URL = os.environ.get(
+    'N8N_WEBHOOK_URL',
+    'https://rpsbareilly06.app.n8n.cloud/webhook/safar-chat'
+)
+
+@app.route('/api/chatbot', methods=['POST'])
+def api_chatbot():
+    """Forward a chat message to the n8n Mayurya AI agent and return its reply."""
+    data = request.get_json(silent=True) or {}
+    message = (data.get('message') or '').strip()
+    # Prefer session_id sent by frontend (localStorage UUID) for memory continuity
+    session_id = (data.get('session_id') or session.get('user_id') or 'anonymous')
+
+    if not message:
+        return jsonify({'error': 'message is required'}), 400
+
+    if not N8N_WEBHOOK_URL:
+        return jsonify({'error': 'Chatbot backend is not configured.'}), 503
+
+    try:
+        n8n_response = requests.post(
+            N8N_WEBHOOK_URL,
+            json={'message': message, 'session_id': session_id},
+            headers={'Content-Type': 'application/json'},
+            timeout=60,
+        )
+
+        # Log full response for debugging
+        print(f'[Chatbot] n8n status: {n8n_response.status_code}')
+        print(f'[Chatbot] n8n body: {n8n_response.text[:500]}')
+
+        n8n_response.raise_for_status()
+
+        raw_body = n8n_response.text.strip()
+        if not raw_body:
+            print(f'[Chatbot] n8n empty body for: "{message[:80]}" — Switch node likely has no fallback branch.')
+            return jsonify({'response': "I can help with travel destinations, itineraries, safety tips, hotels, restaurants, and budget planning. Could you rephrase your question?"}), 200
+
+        try:
+            payload = n8n_response.json()
+        except ValueError:
+            print(f'[Chatbot] n8n returned non-JSON body: {raw_body[:200]}')
+            return jsonify({'response': raw_body}), 200
+
+        # n8n returns either a dict OR a list — normalise to dict first
+        if isinstance(payload, list):
+            payload = payload[0] if payload else {}
+
+        # n8n agents typically return { output: "..." } or { response: "..." }
+        reply = (
+            payload.get('output')
+            or payload.get('response')
+            or payload.get('text')
+            or payload.get('message')
+            or 'I am ready to help with your next travel question.'
+        )
+
+        return jsonify({'response': reply})
+
+    except requests.Timeout:
+        print(f'[Chatbot] n8n timed out after 30s for URL: {N8N_WEBHOOK_URL}')
+        return jsonify({'response': 'Mayurya is thinking… please try again in a moment.'}), 200
+    except requests.RequestException as exc:
+        print(f'[Chatbot] n8n request failed: {exc}')
+        print(f'[Chatbot] URL used: {N8N_WEBHOOK_URL}')
+        return jsonify({'response': 'Connection to Mayurya agent failed. Please try again shortly.'}), 200
+
 @app.route('/about')
 def about_page():
     user = get_current_user()

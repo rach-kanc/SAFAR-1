@@ -78,13 +78,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+  // ── Lightweight markdown → HTML renderer ──────────────────────────────
+  // Handles: **bold**, *italic*, `code`, bullet lists, and line breaks.
+  // Keeps output safe by escaping HTML first.
+  function renderMarkdown(raw) {
+    const esc = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    return esc
+      // Bold & italic
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      // Inline code
+      .replace(/`(.+?)`/g, '<code>$1</code>')
+      // Numbered lists  "1. Foo"
+      .replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>')
+      // Bullet lists "- Foo" or "• Foo"
+      .replace(/^[-•]\s+(.+)$/gm, '<li>$1</li>')
+      // Wrap consecutive <li> elements in a <ul>
+      .replace(/(<li>.*<\/li>\n?)+/g, (m) => `<ul>${m}</ul>`)
+      // Horizontal rule
+      .replace(/^---$/gm, '<hr>')
+      // Line breaks (double newline → paragraph break)
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+  }
+
   function appendMsg(text, who) {
     if (!msgBox) return;
     const wrapper = document.createElement('div');
     wrapper.className = `chat-msg ${who}`;
 
     const message = document.createElement('p');
-    message.textContent = text;
+    if (who === 'bot') {
+      message.innerHTML = renderMarkdown(text);
+    } else {
+      message.textContent = text;
+    }
     wrapper.appendChild(message);
 
     const stamp = document.createElement('small');
@@ -110,71 +142,44 @@ document.addEventListener('DOMContentLoaded', () => {
     if (indicator) indicator.remove();
   }
 
-  const localReplies = [
-    {
-      match: /hello|hi|namaste|hey/i,
-      text: 'Hi, I am Mayurya. Ask me about destinations, itineraries, safety, or how SAFAR works.',
-    },
-    {
-      match: /destination|jaipur|manali|goa|kerala|varanasi|ladakh|agra|shimla/i,
-      text: 'Popular picks on SAFAR include Jaipur for heritage, Manali for mountain trips, Goa for quick coastal escapes, Kerala for scenic slow travel, and Varanasi for spiritual exploration.',
-    },
-    {
-      match: /plan|itinerary|trip|budget/i,
-      text: 'Start with destination, travel dates, group size, and budget. Mayurya can then shape route ideas, stay length, and activity priorities from that brief.',
-    },
-    {
-      match: /join.*group|travel group/i,
-      text: 'Open Groups, browse active trips, and join a public group instantly or request access to a private one.',
-    },
-    {
-      match: /create.*group/i,
-      text: 'Go to Groups and start a squad with destination, type, dates, and a short trip brief.',
-    },
-    {
-      match: /safety|safe/i,
-      text: 'SAFAR includes live safety tracking, monitored zones, anomaly alerts, and a quick panic pathway from the safety dashboard.',
-    },
-    {
-      match: /language|english|hindi|sanskrit|translate/i,
-      text: 'Use the language toggle in the navbar to switch the Mayurya page between English, Hindi, and Sanskrit.',
-    },
-  ];
+  // ── Persistent session ID for n8n memory ──────────────────────────────
+  function getSessionId() {
+    let sid = localStorage.getItem('mayurya_session_id');
+    if (!sid) {
+      sid = (typeof crypto !== 'undefined' && crypto.randomUUID)
+        ? crypto.randomUUID()
+        : Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('mayurya_session_id', sid);
+    }
+    return sid;
+  }
 
   async function getBotResponse(message) {
     showTyping();
-
-    const localReply = localReplies.find((entry) => entry.match.test(message));
-    if (localReply) {
-      window.setTimeout(() => {
-        hideTyping();
-        appendMsg(localReply.text, 'bot');
-      }, 420);
-      return;
-    }
 
     try {
       const response = await fetch('/api/chatbot', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, session_id: getSessionId() }),
       });
 
       hideTyping();
 
       if (!response.ok) {
+        // 404 means the proxy route is missing (dev build without Flask running).
         if (response.status === 404) {
-          appendMsg('This preview build does not have the live Mayurya API connected, but I can still help with destinations, groups, safety, and trip-planning basics here.', 'bot');
+          appendMsg(
+            'Mayurya AI is not yet connected in this preview. Restart the Flask server so the n8n agent can respond.',
+            'bot'
+          );
           return;
         }
-
         let errorMessage = "Sorry, I couldn't process that right now.";
         try {
           const errorBody = await response.json();
           errorMessage = errorBody.error || errorMessage;
-        } catch (_) {
-          // Ignore JSON parse failures and use default text.
-        }
+        } catch (_) { /* ignore */ }
         appendMsg(errorMessage, 'bot');
         return;
       }
