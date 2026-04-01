@@ -1202,10 +1202,6 @@ def api_chatbot():
         print(f'[Chatbot] URL used: {N8N_WEBHOOK_URL}')
         return jsonify({'response': 'Connection to Mayurya agent failed. Please try again shortly.'}), 200
 
-@app.route('/about')
-def about_page():
-    user = get_current_user()
-    return render_template('about.html', username=user.username if user else None)
 
 @app.route('/user')
 def user_dashboard_page():
