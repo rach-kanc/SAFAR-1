@@ -174,11 +174,17 @@ class GroupMember(db.Model):
 class GroupMessage(db.Model):
     __tablename__ = 'group_messages'
 
-    id        = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    group_id  = db.Column(db.String(32), ForeignKey('groups.id', ondelete='CASCADE'), nullable=False)
-    sender_id = db.Column(db.String(32), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
-    message   = db.Column(db.Text, nullable=False)
-    timestamp = db.Column(db.DateTime, default=datetime.now)
+    id          = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    group_id    = db.Column(db.String(32), ForeignKey('groups.id', ondelete='CASCADE'), nullable=False)
+    sender_id   = db.Column(db.String(32), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    message     = db.Column(db.Text, nullable=False)
+    message_type= db.Column(db.String(50), default='text')
+    attachment_name = db.Column(db.String(255))
+    attachment_url  = db.Column(db.String(512))
+    attachment_mime = db.Column(db.String(100))
+    attachment_size = db.Column(db.Integer)
+    location_snapshot = db.Column(db.String(200))
+    timestamp   = db.Column(db.DateTime, default=datetime.now)
 
     group  = relationship('Group', back_populates='messages')
     sender = relationship('User', back_populates='sent_messages')

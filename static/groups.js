@@ -15,6 +15,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const destinationDeskStatus = document.getElementById('destination-desk-status');
   const storyButtons = Array.from(document.querySelectorAll('[data-story-target]'));
   const jumpLinks = Array.from(document.querySelectorAll('[data-group-jump]'));
+  const detailModal = document.getElementById('group-detail-modal');
+  const detailClose = document.getElementById('group-detail-close');
+  const detailCover = document.getElementById('group-detail-cover');
+  const detailCoverImage = document.getElementById('group-detail-cover-img');
+  const detailType = document.getElementById('group-detail-type');
+  const detailTitle = document.getElementById('group-detail-title');
+  const detailDestination = document.getElementById('group-detail-destination');
+  const detailOwner = document.getElementById('group-detail-owner');
+  const detailCapacity = document.getElementById('group-detail-capacity');
+  const detailMembership = document.getElementById('group-detail-membership');
+  const detailDescription = document.getElementById('group-detail-description');
+  const detailLocationPanel = document.getElementById('group-detail-location-panel');
+  const detailPrivacyPanel = document.getElementById('group-detail-privacy-panel');
+  const detailLocations = document.getElementById('group-detail-locations');
+  const detailActions = document.getElementById('group-detail-actions');
   const jumpTargets = {
     create: document.getElementById('group-create-panel'),
     explore: document.getElementById('groups-explore-panel'),
@@ -24,6 +39,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const defaultPreviewImage = photoPreview ? (photoPreview.dataset.defaultImage || '') : '';
   let previewUrl = '';
+  let lastFocusedCard = null;
+
+  function escapeHtml(value) {
+    const div = document.createElement('div');
+    div.textContent = value || '';
+    return div.innerHTML;
+  }
 
   // Make key groups sections visible even if the shared reveal observer
   // misses them or another page script fails earlier.
@@ -108,6 +130,135 @@ document.addEventListener('DOMContentLoaded', () => {
         activateFallback();
       }
     });
+  }
+
+  function closeDetailModal() {
+    if (!detailModal) return;
+    detailModal.classList.add('hidden');
+    detailModal.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('sangha-modal-open');
+    if (lastFocusedCard) {
+      lastFocusedCard.focus();
+    }
+  }
+
+  function renderLocationItems(locations) {
+    if (!detailLocations) return;
+    detailLocations.innerHTML = '';
+
+    if (!locations || locations.length === 0) {
+      detailLocations.innerHTML = `
+        <div class="sangha-location-empty">
+          <strong>No member has shared a live location yet.</strong>
+          <p>The location list will appear here once teammates update their safety location.</p>
+        </div>`;
+      return;
+    }
+
+    detailLocations.innerHTML = locations.map((entry) => {
+      const label = escapeHtml(entry.location?.label || 'Location unavailable');
+      const mapsUrl = entry.location?.maps_url;
+      const locationMarkup = mapsUrl
+        ? `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener">${label}</a>`
+        : `<span>${label}</span>`;
+
+      return `
+        <div class="sangha-location-item">
+          <div>
+            <strong>${escapeHtml(entry.username)}</strong>
+            <small>${escapeHtml(entry.role)}</small>
+          </div>
+          <div class="sangha-location-item-link">${locationMarkup}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderDetailActions(card) {
+    if (!detailActions) return;
+    const actions = card.querySelector('.sangha-group-actions');
+    detailActions.innerHTML = actions ? actions.innerHTML : '';
+  }
+
+  function applyDetailCover(details) {
+    if (!detailCover || !detailCoverImage) return;
+    detailCover.className = 'sangha-modal-media sangha-cover-shell';
+    if (details.cover_theme) {
+      detailCover.classList.add(`sangha-cover-theme-${details.cover_theme}`);
+    }
+    if (details.cover_url) {
+      detailCover.classList.add('has-cover');
+      detailCoverImage.src = details.cover_url;
+      detailCoverImage.alt = `${details.name} cover`;
+      detailCoverImage.hidden = false;
+      detailCoverImage.onerror = () => {
+        detailCoverImage.hidden = true;
+        detailCover.classList.add('is-fallback');
+      };
+    } else {
+      detailCoverImage.removeAttribute('src');
+      detailCoverImage.alt = '';
+      detailCoverImage.hidden = true;
+      detailCover.classList.add('is-fallback');
+    }
+  }
+
+  function renderGroupDetails(card, details) {
+    if (!detailModal) return;
+
+    applyDetailCover(details);
+    if (detailType) {
+      detailType.textContent = details.type || 'Group';
+      detailType.className = `badge ${details.type === 'Public' ? 'badge-tt' : 'badge-ast'}`;
+    }
+    if (detailTitle) detailTitle.textContent = details.name || 'Travel Circle';
+    if (detailDestination) detailDestination.textContent = details.destination || 'Across India';
+    if (detailOwner) detailOwner.textContent = `Led by ${details.owner_name || 'Unknown'}`;
+    if (detailCapacity) detailCapacity.textContent = `${details.member_count || 0} / ${details.max_members || 0} members`;
+    if (detailMembership) {
+      detailMembership.textContent = details.is_member
+        ? 'You are an approved member'
+        : 'Join this group to unlock teammate locations';
+    }
+    if (detailDescription) {
+      detailDescription.textContent = details.description || 'No trip brief yet. This group has not added a longer description.';
+    }
+
+    renderLocationItems(details.member_locations || []);
+    if (detailLocationPanel) {
+      detailLocationPanel.classList.toggle('hidden', !details.is_member);
+    }
+    if (detailPrivacyPanel) {
+      detailPrivacyPanel.classList.toggle('hidden', !!details.is_member);
+    }
+
+    renderDetailActions(card);
+  }
+
+  async function openGroupDetails(card) {
+    if (!detailModal || !card?.dataset.groupId) return;
+
+    lastFocusedCard = card;
+    detailModal.classList.remove('hidden');
+    detailModal.setAttribute('aria-hidden', 'false');
+    document.body.classList.add('sangha-modal-open');
+    renderDetailActions(card);
+    if (detailDescription) detailDescription.textContent = 'Loading group details...';
+    if (detailLocations) detailLocations.innerHTML = '';
+
+    try {
+      const response = await fetch(`/api/tt/groups/${card.dataset.groupId}`);
+      const details = await response.json();
+      if (!response.ok) {
+        throw new Error(details.error || 'Could not load group details.');
+      }
+      renderGroupDetails(card, details);
+    } catch (error) {
+      if (detailDescription) {
+        detailDescription.textContent = error.message || 'Could not load group details right now.';
+      }
+      if (detailLocationPanel) detailLocationPanel.classList.add('hidden');
+      if (detailPrivacyPanel) detailPrivacyPanel.classList.remove('hidden');
+    }
   }
 
   function setPreviewBackdrop(imageUrl) {
@@ -198,6 +349,43 @@ document.addEventListener('DOMContentLoaded', () => {
       target.classList.add('story-focus');
       window.setTimeout(() => target.classList.remove('story-focus'), 1800);
     });
+  });
+
+  groupCards.forEach((card) => {
+    card.addEventListener('click', (event) => {
+      if (event.target.closest('.sangha-group-actions a')) {
+        return;
+      }
+      openGroupDetails(card);
+    });
+
+    card.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        if (event.target.closest('.sangha-group-actions a')) {
+          return;
+        }
+        event.preventDefault();
+        openGroupDetails(card);
+      }
+    });
+  });
+
+  if (detailModal) {
+    detailModal.addEventListener('click', (event) => {
+      if (event.target === detailModal) {
+        closeDetailModal();
+      }
+    });
+  }
+
+  if (detailClose) {
+    detailClose.addEventListener('click', closeDetailModal);
+  }
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && detailModal && !detailModal.classList.contains('hidden')) {
+      closeDetailModal();
+    }
   });
 
   jumpLinks.forEach((link) => {

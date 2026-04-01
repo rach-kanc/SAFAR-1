@@ -195,6 +195,13 @@ SUPPORTED_TRANSLATION_LANGS = {"en", "hi", "sa"}
 GROUP_UPLOAD_DIR = os.path.join(PROJECT_ROOT, 'static', 'uploads', 'groups')
 GROUP_UPLOAD_PREFIX = '/static/uploads/groups/'
 GROUP_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+GROUP_MESSAGE_UPLOAD_DIR = os.path.join(PROJECT_ROOT, 'static', 'uploads', 'group_messages')
+GROUP_MESSAGE_UPLOAD_PREFIX = '/static/uploads/group_messages/'
+GROUP_DOCUMENT_EXTENSIONS = {
+    '.pdf', '.doc', '.docx', '.xls', '.xlsx', '.ppt', '.pptx',
+    '.txt', '.csv', '.rtf', '.zip'
+}
+MAX_GROUP_ATTACHMENT_BYTES = 12 * 1024 * 1024
 GROUP_LOCAL_COVERS = {
     'goa': '/static/images/dest_goa.png',
     'jaipur': '/static/images/dest_jaipur.png',
@@ -318,7 +325,7 @@ def find_or_create_destination(name: str) -> str | None:
 
 
 def ensure_group_schema():
-    """Backfill new group UI fields for existing SQLite/Postgres databases."""
+    """Backfill group and chat UI fields for existing SQLite/Postgres databases."""
     try:
         inspector = inspect(db.engine)
         if 'groups' not in inspector.get_table_names():
@@ -328,6 +335,22 @@ def ensure_group_schema():
         if 'cover_image' not in columns:
             with db.engine.begin() as conn:
                 conn.execute(text("ALTER TABLE groups ADD COLUMN cover_image VARCHAR(255)"))
+
+        if 'group_messages' in inspector.get_table_names():
+            message_columns = {col['name'] for col in inspector.get_columns('group_messages')}
+            missing_columns = {
+                'message_type': "ALTER TABLE group_messages ADD COLUMN message_type VARCHAR(20)",
+                'attachment_name': "ALTER TABLE group_messages ADD COLUMN attachment_name VARCHAR(255)",
+                'attachment_url': "ALTER TABLE group_messages ADD COLUMN attachment_url VARCHAR(255)",
+                'attachment_mime': "ALTER TABLE group_messages ADD COLUMN attachment_mime VARCHAR(120)",
+                'attachment_size': "ALTER TABLE group_messages ADD COLUMN attachment_size INTEGER",
+                'location_snapshot': "ALTER TABLE group_messages ADD COLUMN location_snapshot VARCHAR(255)",
+            }
+            statements = [sql for name, sql in missing_columns.items() if name not in message_columns]
+            if statements:
+                with db.engine.begin() as conn:
+                    for statement in statements:
+                        conn.execute(text(statement))
     except Exception as exc:
         print(f"[DB] Warning: could not verify groups schema extras: {exc}")
 
@@ -345,6 +368,36 @@ def save_group_cover_upload(file_storage) -> str | None:
     stored_name = f"group_{uuid.uuid4().hex}{ext}"
     file_storage.save(os.path.join(GROUP_UPLOAD_DIR, stored_name))
     return f"{GROUP_UPLOAD_PREFIX}{stored_name}"
+
+
+def save_group_document_upload(file_storage) -> dict | None:
+    if not file_storage or not getattr(file_storage, 'filename', ''):
+        return None
+
+    original_name = secure_filename(file_storage.filename)
+    ext = os.path.splitext(original_name)[1].lower()
+    if ext not in GROUP_DOCUMENT_EXTENSIONS:
+        return None
+
+    try:
+        file_storage.stream.seek(0, os.SEEK_END)
+        size = file_storage.stream.tell()
+        file_storage.stream.seek(0)
+    except Exception:
+        size = 0
+
+    if size and size > MAX_GROUP_ATTACHMENT_BYTES:
+        raise ValueError('File is too large. Please upload a document under 12 MB.')
+
+    os.makedirs(GROUP_MESSAGE_UPLOAD_DIR, exist_ok=True)
+    stored_name = f"message_{uuid.uuid4().hex}{ext}"
+    file_storage.save(os.path.join(GROUP_MESSAGE_UPLOAD_DIR, stored_name))
+    return {
+        'name': original_name,
+        'url': f"{GROUP_MESSAGE_UPLOAD_PREFIX}{stored_name}",
+        'mime': getattr(file_storage, 'mimetype', None),
+        'size': size or None,
+    }
 
 
 def _pick_group_cover_theme(seed_text: str) -> str:
@@ -405,6 +458,50 @@ def resolve_group_cover_url(group: Group) -> str:
     return cover['url'] or ''
 
 
+def format_file_size(size_bytes: int | None) -> str:
+    if not size_bytes:
+        return ''
+    if size_bytes < 1024:
+        return f"{size_bytes} B"
+    if size_bytes < 1024 * 1024:
+        return f"{size_bytes / 1024:.1f} KB"
+    return f"{size_bytes / (1024 * 1024):.1f} MB"
+
+
+def parse_location_snapshot(raw_location: str | None) -> dict | None:
+    if not raw_location:
+        return None
+
+    raw_text = str(raw_location).strip()
+    if not raw_text or raw_text.lower() == 'not available':
+        return None
+
+    patterns = (
+        r'Lat:\s*([-+]?\d+(?:\.\d+)?)\s*,\s*Lon:\s*([-+]?\d+(?:\.\d+)?)',
+        r'^\s*([-+]?\d+(?:\.\d+)?)\s*,\s*([-+]?\d+(?:\.\d+)?)\s*$',
+    )
+    for pattern in patterns:
+        match = re.search(pattern, raw_text, flags=re.IGNORECASE)
+        if match:
+            latitude = float(match.group(1))
+            longitude = float(match.group(2))
+            return {
+                'label': f"{latitude:.5f}, {longitude:.5f}",
+                'latitude': latitude,
+                'longitude': longitude,
+                'maps_url': f"https://www.google.com/maps?q={latitude},{longitude}",
+                'raw': raw_text,
+            }
+
+    return {
+        'label': raw_text,
+        'latitude': None,
+        'longitude': None,
+        'maps_url': None,
+        'raw': raw_text,
+    }
+
+
 def serialize_group_card(group: Group, member_ids: set[str]) -> dict:
     owner = db.session.get(User, group.owner_id)
     cover = resolve_group_cover(group)
@@ -432,6 +529,162 @@ def serialize_group_card(group: Group, member_ids: set[str]) -> dict:
         'created_at_label': group.created_at.strftime('%d %b %Y') if group.created_at else '',
         'story_initials': [group_initial, owner_initial, destination_initial],
     }
+
+
+def serialize_group_member_row(
+    membership: GroupMember,
+    user: User,
+    tourist_map: dict[str, Tourist] | None = None,
+    include_location: bool = False,
+) -> dict:
+    tourist = tourist_map.get(user.id) if tourist_map else None
+    location = parse_location_snapshot(tourist.last_known_location if tourist else None) if include_location else None
+    return {
+        'user_id': user.id,
+        'username': user.username,
+        'email': user.email,
+        'role': membership.role,
+        'joined_at': membership.joined_at.isoformat() if membership.joined_at else None,
+        'location': location,
+    }
+
+
+def serialize_group_message(message: GroupMessage) -> dict:
+    location = parse_location_snapshot(message.location_snapshot)
+    message_type = (message.message_type or 'text').lower()
+    return {
+        'id': message.id,
+        'sender': message.sender.username,
+        'sender_name': message.sender.username,
+        'sender_id': message.sender_id,
+        'message': message.message or '',
+        'message_type': message_type,
+        'timestamp': message.timestamp.isoformat(),
+        'timestamp_label': message.timestamp.strftime('%H:%M'),
+        'attachment_name': message.attachment_name,
+        'attachment_url': message.attachment_url,
+        'attachment_mime': message.attachment_mime,
+        'attachment_size': message.attachment_size,
+        'attachment_size_label': format_file_size(message.attachment_size),
+        'location_snapshot': message.location_snapshot,
+        'location': location,
+        'has_attachment': bool(message.attachment_url),
+        'is_sos': message_type == 'sos',
+    }
+
+
+def build_group_message(
+    *,
+    group_id: str,
+    sender_id: str,
+    text: str = '',
+    message_type: str = 'text',
+    attachment: dict | None = None,
+    location_snapshot: str | None = None,
+) -> GroupMessage:
+    payload = GroupMessage(
+        group_id=group_id,
+        sender_id=sender_id,
+        message=text or '',
+        message_type=message_type,
+        location_snapshot=location_snapshot,
+    )
+    if attachment:
+        payload.attachment_name = attachment.get('name')
+        payload.attachment_url = attachment.get('url')
+        payload.attachment_mime = attachment.get('mime')
+        payload.attachment_size = attachment.get('size')
+    db.session.add(payload)
+    return payload
+
+
+def emit_group_message(message: GroupMessage):
+    socketio.emit('new_message', serialize_group_message(message), room=message.group_id)
+
+
+def serialize_group_details(group: Group, current_user: User | None) -> dict:
+    cover = resolve_group_cover(group)
+    approved_rows = (
+        db.session.query(GroupMember, User)
+        .join(User, User.id == GroupMember.user_id)
+        .filter(GroupMember.group_id == group.id, GroupMember.join_status == 'Approved')
+        .all()
+    )
+    tourist_ids = [user.id for _, user in approved_rows]
+    tourist_map = {}
+    if tourist_ids:
+        tourist_map = {
+            tourist.user_id: tourist
+            for tourist in Tourist.query.filter(Tourist.user_id.in_(tourist_ids)).all()
+        }
+
+    is_member = bool(current_user and any(user.id == current_user.id for _, user in approved_rows))
+    members = [
+        serialize_group_member_row(member, user, tourist_map=tourist_map, include_location=is_member)
+        for member, user in approved_rows
+    ]
+    member_locations = [
+        {
+            'user_id': item['user_id'],
+            'username': item['username'],
+            'role': item['role'],
+            'location': item['location'],
+        }
+        for item in members
+        if is_member and item['user_id'] != (current_user.id if current_user else None) and item['location']
+    ]
+
+    owner = db.session.get(User, group.owner_id)
+    return {
+        'id': group.id,
+        'name': group.name,
+        'description': group.description or '',
+        'type': group.group_type,
+        'owner_id': group.owner_id,
+        'owner_name': owner.username if owner else 'Unknown',
+        'destination': group.destination.name if group.destination else None,
+        'member_count': group.member_count,
+        'max_members': group.max_members,
+        'cover_image': group.cover_image,
+        'cover_url': cover['url'],
+        'cover_mode': cover['mode'],
+        'cover_theme': cover['theme'],
+        'is_member': is_member,
+        'members': members,
+        'member_locations': member_locations,
+    }
+
+
+def create_group_sos_messages(user: User, tourist: Tourist, alert_label: str) -> list[GroupMessage]:
+    memberships = GroupMember.query.filter_by(user_id=user.id, join_status='Approved').all()
+    if not memberships:
+        return []
+
+    recent_cutoff = datetime.now() - timedelta(seconds=8)
+    created_messages: list[GroupMessage] = []
+    for membership in memberships:
+        recent_existing = (
+            GroupMessage.query
+            .filter(
+                GroupMessage.group_id == membership.group_id,
+                GroupMessage.sender_id == user.id,
+                GroupMessage.message_type == 'sos',
+                GroupMessage.timestamp >= recent_cutoff,
+            )
+            .first()
+        )
+        if recent_existing:
+            continue
+
+        created_messages.append(build_group_message(
+            group_id=membership.group_id,
+            sender_id=user.id,
+            text=f"SOS triggered by {user.username} via {alert_label}. Immediate attention required.",
+            message_type='sos',
+            location_snapshot=tourist.last_known_location,
+        ))
+
+    return created_messages
 
 
 def normalize_translation_lang(lang: str | None) -> str:
@@ -516,6 +769,8 @@ def check_for_anomalies():
 
         # Fallback for simple inactivity
         for t in active:
+            if t.last_updated_at is None:
+                continue
             idle = (now - t.last_updated_at).total_seconds()
 
             if idle > CRITICAL_SEC:
@@ -746,16 +1001,29 @@ def chat_page(group_id):
     if not group:
         return "Group not found", 404
 
-    # Fetch members
+    membership = GroupMember.query.filter_by(
+        group_id=group_id, user_id=user.id, join_status='Approved'
+    ).first()
+    if not membership:
+        return redirect(url_for('groups_page'))
+
     member_rows = (
         db.session.query(GroupMember, User)
         .join(User, User.id == GroupMember.user_id)
         .filter(GroupMember.group_id == group_id, GroupMember.join_status == 'Approved')
         .all()
     )
-    members = [{'username': u.username, 'role': m.role} for m, u in member_rows]
+    tourist_map = {
+        tourist.user_id: tourist
+        for tourist in Tourist.query.filter(
+            Tourist.user_id.in_([member_user.id for _, member_user in member_rows])
+        ).all()
+    } if member_rows else {}
+    members = [
+        serialize_group_member_row(member, member_user, tourist_map=tourist_map, include_location=True)
+        for member, member_user in member_rows
+    ]
 
-    # Fetch messages
     msgs = (
         GroupMessage.query
         .filter_by(group_id=group_id)
@@ -763,11 +1031,7 @@ def chat_page(group_id):
         .limit(100)
         .all()
     )
-    messages = [{
-        'sender_name': m.sender.username,
-        'message':     m.message,
-        'timestamp':   m.timestamp.strftime('%H:%M'),
-    } for m in msgs]
+    messages = [serialize_group_message(message) for message in msgs]
 
     return render_template('group_chat.html',
         group_id=group.id,
@@ -1528,20 +1792,11 @@ def tt_create_group():
 
 @app.route('/api/tt/groups/<group_id>', methods=['GET'])
 def tt_get_group(group_id):
+    user = get_current_user()
     g = db.session.get(Group, group_id)
     if not g:
         return jsonify({'error': 'Not found.'}), 404
-    cover = resolve_group_cover(g)
-    return jsonify({
-        'id': g.id, 'name': g.name, 'description': g.description,
-        'type': g.group_type, 'owner_id': g.owner_id,
-        'destination': g.destination.name if g.destination else None,
-        'member_count': g.member_count, 'max_members': g.max_members,
-        'cover_image': g.cover_image,
-        'cover_url': cover['url'],
-        'cover_mode': cover['mode'],
-        'cover_theme': cover['theme'],
-    })
+    return jsonify(serialize_group_details(g, user))
 
 
 @app.route('/api/tt/groups/<group_id>/join', methods=['POST'])
@@ -1615,6 +1870,16 @@ def tt_delete_group(group_id):
 
 @app.route('/api/tt/groups/<group_id>/members')
 def tt_group_members(group_id):
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Not authenticated.'}), 401
+
+    is_member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=user.id, join_status='Approved'
+    ).first()
+    if not is_member:
+        return jsonify({'error': 'Not a member of this group.'}), 403
+
     members = (
         db.session.query(GroupMember, User)
         .join(User, User.id == GroupMember.user_id)
@@ -1622,16 +1887,30 @@ def tt_group_members(group_id):
                 GroupMember.join_status == 'Approved')
         .all()
     )
-    return jsonify([{
-        'username':  u.username,
-        'email':     u.email,
-        'role':      m.role,
-        'joined_at': m.joined_at.isoformat(),
-    } for m, u in members])
+    tourist_map = {
+        tourist.user_id: tourist
+        for tourist in Tourist.query.filter(
+            Tourist.user_id.in_([member_user.id for _, member_user in members])
+        ).all()
+    } if members else {}
+    return jsonify([
+        serialize_group_member_row(member, member_user, tourist_map=tourist_map, include_location=True)
+        for member, member_user in members
+    ])
 
 
 @app.route('/api/tt/groups/<group_id>/messages')
 def tt_group_messages(group_id):
+    user = get_current_user()
+    if not user:
+        return jsonify({'error': 'Not authenticated.'}), 401
+
+    member = GroupMember.query.filter_by(
+        group_id=group_id, user_id=user.id, join_status='Approved'
+    ).first()
+    if not member:
+        return jsonify({'error': 'Not a member of this group.'}), 403
+
     limit = min(int(request.args.get('limit', 100)), 200)
     before_id = request.args.get('before')
 
@@ -1640,16 +1919,12 @@ def tt_group_messages(group_id):
         query = query.filter(GroupMessage.id < int(before_id))
     msgs = (
         query
-        .order_by(GroupMessage.timestamp.asc())
+        .order_by(GroupMessage.id.desc())
         .limit(limit)
         .all()
     )
-    return jsonify([{
-        'id':        m.id,
-        'sender':    m.sender.username,
-        'message':   m.message,
-        'timestamp': m.timestamp.isoformat(),
-    } for m in msgs])
+    msgs.reverse()
+    return jsonify([serialize_group_message(message) for message in msgs])
 
 
 @app.route('/api/tt/groups/<group_id>/messages', methods=['POST'])
@@ -1664,27 +1939,36 @@ def tt_send_message(group_id):
     if not member:
         return jsonify({'error': 'Not a member of this group.'}), 403
 
-    data = request.get_json(force=True)
-    text = (data.get('message') or '').strip()
-    if not text:
-        return jsonify({'error': 'Message cannot be empty.'}), 400
+    attachment = None
+    if request.files:
+        try:
+            attachment = save_group_document_upload(request.files.get('document'))
+        except ValueError as exc:
+            return jsonify({'error': str(exc)}), 400
+    if request.is_json:
+        data = request.get_json(force=True) or {}
+        text = (data.get('message') or '').strip()
+    else:
+        text = (request.form.get('message') or '').strip()
 
-    msg = GroupMessage(
-        group_id  = group_id,
-        sender_id = user.id,
-        message   = text,
+    if not text and not attachment:
+        return jsonify({'error': 'Message or document is required.'}), 400
+    if request.files and not attachment:
+        return jsonify({'error': 'Unsupported document type. Upload PDF, DOC, DOCX, XLS, XLSX, PPT, PPTX, TXT, CSV, RTF, or ZIP.'}), 400
+
+    message_type = 'document' if attachment else 'text'
+    msg = build_group_message(
+        group_id=group_id,
+        sender_id=user.id,
+        text=text,
+        message_type=message_type,
+        attachment=attachment,
     )
-    db.session.add(msg)
     db.session.commit()
 
-    # Broadcast to room via SocketIO
-    socketio.emit('new_message', {
-        'sender':    user.username,
-        'message':   text,
-        'timestamp': msg.timestamp.isoformat(),
-    }, room=group_id)
+    emit_group_message(msg)
 
-    return jsonify({'message': 'Sent.', 'id': msg.id}), 201
+    return jsonify({'message': 'Sent.', 'payload': serialize_group_message(msg), 'id': msg.id}), 201
 
 
 @app.route('/api/tt/my-groups')
@@ -1823,7 +2107,8 @@ def safety_update_location():
 
 @app.route('/api/safety/panic', methods=['POST'])
 def safety_panic():
-    tourist_id = session.get('tourist_id') or (get_current_tourist().id if get_current_tourist() else None)
+    tourist = get_current_tourist()
+    tourist_id = session.get('tourist_id') or (tourist.id if tourist else None)
     if not tourist_id:
         return jsonify({'error': 'Not authenticated.'}), 401
 
@@ -1831,13 +2116,20 @@ def safety_panic():
     if not tourist:
         return jsonify({'error': 'Tourist not found.'}), 404
 
+    user = get_current_user()
+    if not user and tourist.user_id:
+        user = db.session.get(User, tourist.user_id)
+
     db.session.add(Alert(
         tourist_id = tourist.id,
         location   = tourist.last_known_location,
         alert_type = 'Panic Button',
     ))
+    sos_messages = create_group_sos_messages(user, tourist, 'Panic Button') if user else []
     tourist.safety_score = 0
     db.session.commit()
+    for message in sos_messages:
+        emit_group_message(message)
     return jsonify({'message': 'Panic alert registered.'}), 200
 
 
@@ -2023,15 +2315,14 @@ def on_send_message(data):
     if not member:
         return
 
-    msg = GroupMessage(group_id=group_id, sender_id=user.id, message=text)
-    db.session.add(msg)
+    msg = build_group_message(
+        group_id=group_id,
+        sender_id=user.id,
+        text=text,
+        message_type='text',
+    )
     db.session.commit()
-
-    emit('new_message', {
-        'sender':    user.username,
-        'message':   text,
-        'timestamp': msg.timestamp.isoformat(),
-    }, room=group_id)
+    emit('new_message', serialize_group_message(msg), room=group_id)
 
 
 # ─────────────────────────────────────────────
@@ -2044,12 +2335,14 @@ def init_db():
             db.create_all()
             ensure_group_schema()
             os.makedirs(GROUP_UPLOAD_DIR, exist_ok=True)
+            os.makedirs(GROUP_MESSAGE_UPLOAD_DIR, exist_ok=True)
             seed_safety_zones()
             print("Database ready.")
         except Exception as e:
             print(f"[DB] Warning: db.create_all() encountered an issue (tables may already exist): {e}")
             ensure_group_schema()
             os.makedirs(GROUP_UPLOAD_DIR, exist_ok=True)
+            os.makedirs(GROUP_MESSAGE_UPLOAD_DIR, exist_ok=True)
             print("Database ready (skipped schema creation).")
 
 
@@ -2143,8 +2436,12 @@ def blynk_loop():
                             # Log every press immediately without cooldown restrictions
                             db.session.add(Alert(tourist_id=user.id, location=user.last_known_location, alert_type='HARDWARE Panic'))
                             db.session.add(Anomaly(tourist_id=user.id, anomaly_type='Blynk Hardware SOS', description='Physical SOS button press detected via Blynk IoT Cloud.', status='active'))
+                            linked_user = db.session.get(User, user.user_id) if user.user_id else None
+                            sos_messages = create_group_sos_messages(linked_user, user, 'HARDWARE Panic') if linked_user else []
                             user.safety_score = 0
                             db.session.commit()
+                            for sos_message in sos_messages:
+                                emit_group_message(sos_message)
                         
                         # 2. GPS LOCATION CHECK (Happens every 125 loops * 0.4s = 50 seconds)
                         if loop_count % 125 == 0:
@@ -2203,8 +2500,12 @@ def serial_monitor_loop():
                             
                             db.session.add(Alert(tourist_id=user.id, location=user.last_known_location, alert_type='HARDWARE Panic'))
                             db.session.add(Anomaly(tourist_id=user.id, anomaly_type='Direct USB Hardware SOS', description='Physical SOS button press detected via local USB COM3.', status='active'))
+                            linked_user = db.session.get(User, user.user_id) if user.user_id else None
+                            sos_messages = create_group_sos_messages(linked_user, user, 'HARDWARE Panic') if linked_user else []
                             user.safety_score = 0
                             db.session.commit()
+                            for sos_message in sos_messages:
+                                emit_group_message(sos_message)
                             
                         # 2. LOCAL USB GPS TRACKING TRIGGER
                         elif line.startswith("GPS:"):
