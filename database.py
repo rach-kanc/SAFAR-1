@@ -136,6 +136,7 @@ class Group(db.Model):
     id           = db.Column(db.String(32), primary_key=True, default=generate_id)
     name         = db.Column(db.String(120), nullable=False)
     description  = db.Column(db.Text)
+    cover_image  = db.Column(db.String(255))
     group_type   = db.Column(db.String(10), nullable=False)   # 'Public' | 'Private'
     owner_id     = db.Column(db.String(32), ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     destination_id = db.Column(db.String(32), ForeignKey('destinations.id', ondelete='SET NULL'))

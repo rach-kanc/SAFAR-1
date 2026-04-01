@@ -9,6 +9,7 @@ Run locally:
 """
 
 import os, re, sys, uuid, hashlib, threading, time, random, requests
+from types import SimpleNamespace
 from datetime import datetime, timedelta
 from math import radians, sin, cos, sqrt, atan2
 
@@ -31,6 +32,7 @@ load_dotenv()
 
 from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 from flask_socketio import SocketIO, join_room, leave_room, emit
+from werkzeug.utils import secure_filename
 
 # Optional Twilio
 try:
@@ -85,7 +87,7 @@ if "pg8000" in DATABASE_URL:
     if "sslmode=" in DATABASE_URL:
         DATABASE_URL = re.sub(r'[?&]sslmode=[^&]+', '', DATABASE_URL)
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.exc import DBAPIError, OperationalError, InterfaceError
 from sqlalchemy.pool import NullPool
 
@@ -190,6 +192,57 @@ translation_cache = {}
 TRANSLATION_PROVIDER = "google-gtx-public"
 TRANSLATION_URL = "https://translate.googleapis.com/translate_a/single"
 SUPPORTED_TRANSLATION_LANGS = {"en", "hi", "sa"}
+GROUP_UPLOAD_DIR = os.path.join(PROJECT_ROOT, 'static', 'uploads', 'groups')
+GROUP_UPLOAD_PREFIX = '/static/uploads/groups/'
+GROUP_IMAGE_EXTENSIONS = {'.jpg', '.jpeg', '.png', '.webp', '.gif'}
+GROUP_LOCAL_COVERS = {
+    'goa': '/static/images/dest_goa.png',
+    'jaipur': '/static/images/dest_jaipur.png',
+    'kerala': '/static/images/dest_kerala.png',
+    'manali': '/static/images/dest_manali.png',
+    'varanasi': '/static/images/dest_varanasi.png',
+}
+GROUP_SCENIC_COVERS = [
+    '/static/images/dest_manali.png',
+    '/static/images/dest_jaipur.png',
+    '/static/images/dest_kerala.png',
+    '/static/images/dest_goa.png',
+    '/static/images/dest_varanasi.png',
+    '/static/images/hero_bg.png',
+]
+GROUP_DESTINATION_COVERS = {
+    'goa': GROUP_LOCAL_COVERS['goa'],
+    'beach': GROUP_LOCAL_COVERS['goa'],
+    'coast': GROUP_LOCAL_COVERS['goa'],
+    'kerala': GROUP_LOCAL_COVERS['kerala'],
+    'alappuzha': GROUP_LOCAL_COVERS['kerala'],
+    'alleppey': GROUP_LOCAL_COVERS['kerala'],
+    'houseboat': GROUP_LOCAL_COVERS['kerala'],
+    'backwater': GROUP_LOCAL_COVERS['kerala'],
+    'jaipur': GROUP_LOCAL_COVERS['jaipur'],
+    'udaipur': GROUP_LOCAL_COVERS['jaipur'],
+    'rajasthan': GROUP_LOCAL_COVERS['jaipur'],
+    'heritage': GROUP_LOCAL_COVERS['jaipur'],
+    'palace': GROUP_LOCAL_COVERS['jaipur'],
+    'agra': GROUP_LOCAL_COVERS['jaipur'],
+    'manali': GROUP_LOCAL_COVERS['manali'],
+    'shimla': GROUP_LOCAL_COVERS['manali'],
+    'fort': GROUP_LOCAL_COVERS['manali'],
+    'trek': GROUP_LOCAL_COVERS['manali'],
+    'adventure': GROUP_LOCAL_COVERS['manali'],
+    'hill': GROUP_LOCAL_COVERS['manali'],
+    'mountain': GROUP_LOCAL_COVERS['manali'],
+    'rishikesh': '/static/images/hero_bg.png',
+    'yoga': '/static/images/hero_bg.png',
+    'ganges': '/static/images/dest_varanasi.png',
+    'hampi': '/static/images/dest_jaipur.png',
+    'ruins': '/static/images/dest_jaipur.png',
+    'varanasi': GROUP_LOCAL_COVERS['varanasi'],
+    'ghat': GROUP_LOCAL_COVERS['varanasi'],
+    'spiritual': GROUP_LOCAL_COVERS['varanasi'],
+    'temple': GROUP_LOCAL_COVERS['varanasi'],
+}
+GROUP_PLACEHOLDER_THEMES = ('saffron', 'teal', 'lotus', 'sand', 'indigo')
 
 
 def database_unavailable_response():
@@ -262,6 +315,123 @@ def find_or_create_destination(name: str) -> str | None:
     db.session.add(dest)
     db.session.commit()
     return dest.id
+
+
+def ensure_group_schema():
+    """Backfill new group UI fields for existing SQLite/Postgres databases."""
+    try:
+        inspector = inspect(db.engine)
+        if 'groups' not in inspector.get_table_names():
+            return
+
+        columns = {col['name'] for col in inspector.get_columns('groups')}
+        if 'cover_image' not in columns:
+            with db.engine.begin() as conn:
+                conn.execute(text("ALTER TABLE groups ADD COLUMN cover_image VARCHAR(255)"))
+    except Exception as exc:
+        print(f"[DB] Warning: could not verify groups schema extras: {exc}")
+
+
+def save_group_cover_upload(file_storage) -> str | None:
+    if not file_storage or not getattr(file_storage, 'filename', ''):
+        return None
+
+    filename = secure_filename(file_storage.filename)
+    ext = os.path.splitext(filename)[1].lower()
+    if ext not in GROUP_IMAGE_EXTENSIONS:
+        return None
+
+    os.makedirs(GROUP_UPLOAD_DIR, exist_ok=True)
+    stored_name = f"group_{uuid.uuid4().hex}{ext}"
+    file_storage.save(os.path.join(GROUP_UPLOAD_DIR, stored_name))
+    return f"{GROUP_UPLOAD_PREFIX}{stored_name}"
+
+
+def _pick_group_cover_theme(seed_text: str) -> str:
+    if not seed_text:
+        return GROUP_PLACEHOLDER_THEMES[0]
+    index = sum(ord(char) for char in seed_text) % len(GROUP_PLACEHOLDER_THEMES)
+    return GROUP_PLACEHOLDER_THEMES[index]
+
+
+def _pick_seeded_cover(options: list[str], seed_text: str) -> str:
+    if not options:
+        return ''
+    index = sum(ord(char) for char in (seed_text or 'safar')) % len(options)
+    return options[index]
+
+
+def resolve_destination_cover_url(*parts: str | None) -> str:
+    haystack = " ".join(filter(None, parts)).lower()
+    for keyword, cover in GROUP_DESTINATION_COVERS.items():
+        if keyword in haystack:
+            return cover
+    return _pick_seeded_cover(GROUP_SCENIC_COVERS, haystack or 'safar')
+
+
+def resolve_group_cover(group: Group) -> dict:
+    seed_text = group.id or group.name or (group.destination.name if group.destination else '') or 'safar'
+
+    if group.cover_image:
+        return {
+            'url': group.cover_image,
+            'mode': 'uploaded',
+            'theme': _pick_group_cover_theme(seed_text),
+        }
+
+    haystack = " ".join(filter(None, [
+        group.name,
+        group.description,
+        group.destination.name if group.destination else None,
+    ])).lower()
+
+    for keyword, cover in GROUP_DESTINATION_COVERS.items():
+        if keyword in haystack:
+            return {
+                'url': cover,
+                'mode': 'destination',
+                'theme': _pick_group_cover_theme(seed_text),
+            }
+
+    return {
+        'url': _pick_seeded_cover(GROUP_SCENIC_COVERS, seed_text),
+        'mode': 'scenic',
+        'theme': _pick_group_cover_theme(seed_text),
+    }
+
+
+def resolve_group_cover_url(group: Group) -> str:
+    cover = resolve_group_cover(group)
+    return cover['url'] or ''
+
+
+def serialize_group_card(group: Group, member_ids: set[str]) -> dict:
+    owner = db.session.get(User, group.owner_id)
+    cover = resolve_group_cover(group)
+    destination_name = group.destination.name if group.destination else None
+    group_initial = (group.name[:1] or 'S').upper()
+    owner_initial = (owner.username[:1] if owner and owner.username else 'O').upper()
+    destination_initial = (destination_name[:1] if destination_name else 'I').upper()
+
+    return {
+        'group_id': group.id,
+        'group_name': group.name,
+        'group_description': group.description,
+        'group_type': group.group_type,
+        'owner_id': group.owner_id,
+        'owner_name': owner.username if owner else 'Unknown',
+        'destination_name': destination_name,
+        'member_count': group.member_count,
+        'max_members': group.max_members,
+        'is_member': group.id in member_ids,
+        'cover_image': group.cover_image,
+        'cover_url': cover['url'],
+        'cover_mode': cover['mode'],
+        'cover_theme': cover['theme'],
+        'created_at': group.created_at,
+        'created_at_label': group.created_at.strftime('%d %b %Y') if group.created_at else '',
+        'story_initials': [group_initial, owner_initial, destination_initial],
+    }
 
 
 def normalize_translation_lang(lang: str | None) -> str:
@@ -434,29 +604,37 @@ def groups_page():
     if not user:
         return redirect(url_for('auth_page'))
 
-    # Build groups list with extra info for the template
-    all_groups = Group.query.all()
-    my_member_ids = [m.group_id for m in user.memberships] if user.memberships else []
-    groups = []
-    for g in all_groups:
-        owner = db.session.get(User, g.owner_id)
-        groups.append({
-            'group_id':          g.id,
-            'group_name':        g.name,
-            'group_description': g.description,
-            'group_type':        g.group_type,
-            'owner_id':          g.owner_id,
-            'owner_name':        owner.username if owner else 'Unknown',
-            'destination_name':  g.destination.name if g.destination else None,
-            'member_count':      g.member_count,
-            'is_member':         g.id in my_member_ids,
-        })
+    all_groups = Group.query.order_by(Group.created_at.desc()).all()
+    my_member_ids = {m.group_id for m in user.memberships} if user.memberships else set()
+    groups = [serialize_group_card(group, my_member_ids) for group in all_groups]
 
-    # Build destinations list
     dests = Destination.query.order_by(Destination.name).all()
-    destinations = [{'destination_id': d.id, 'destination_name': d.name, 'country': d.country} for d in dests]
+    destinations = [{
+        'destination_id': d.id,
+        'destination_name': d.name,
+        'country': d.country,
+        'cover_url': resolve_destination_cover_url(d.name, d.country),
+    } for d in dests]
+    public_count = sum(1 for group in groups if group['group_type'] == 'Public')
+    private_count = sum(1 for group in groups if group['group_type'] == 'Private')
+    story_groups = groups[:6]
+    stats = {
+        'group_count': len(groups),
+        'destination_count': len(destinations),
+        'my_group_count': sum(1 for group in groups if group['is_member']),
+        'public_count': public_count,
+        'private_count': private_count,
+    }
 
-    return render_template('groups.html', user=user, username=user.username, groups=groups, destinations=destinations)
+    return render_template(
+        'groups.html',
+        user=user,
+        username=user.username,
+        groups=groups,
+        story_groups=story_groups,
+        destinations=destinations,
+        stats=stats,
+    )
 
 
 @app.route('/groups', methods=['POST'])
@@ -465,32 +643,43 @@ def groups_create():
     if not user:
         return redirect(url_for('auth_page'))
 
-    name       = (request.form.get('group_name') or '').strip()
+    name = (request.form.get('group_name') or '').strip()
     group_type = request.form.get('group_type', 'Public')
-    dest_name  = request.form.get('destination_name')
-    desc       = request.form.get('group_description')
+    dest_name = (request.form.get('destination_name') or '').strip()
+    desc = (request.form.get('group_description') or '').strip() or None
+    cover_image = save_group_cover_upload(request.files.get('group_photo'))
+
+    try:
+        max_members = int(request.form.get('max_members', 12))
+    except (TypeError, ValueError):
+        max_members = 12
+    max_members = max(2, min(max_members, 100))
 
     if not name:
         return redirect(url_for('groups_page'))
+    if group_type not in ('Public', 'Private'):
+        group_type = 'Public'
 
     dest_id = find_or_create_destination(dest_name) if dest_name else None
 
     group = Group(
-        id             = generate_id(),
-        name           = name,
-        description    = desc,
-        group_type     = group_type,
-        owner_id       = user.id,
+        id = generate_id(),
+        name = name,
+        description = desc,
+        cover_image = cover_image,
+        group_type = group_type,
+        owner_id = user.id,
         destination_id = dest_id,
+        max_members = max_members,
     )
     db.session.add(group)
     db.session.flush()
 
     member = GroupMember(
-        id       = generate_id(),
+        id = generate_id(),
         group_id = group.id,
         user_id  = user.id,
-        role     = 'Owner',
+        role = 'Owner',
     )
     db.session.add(member)
     db.session.commit()
@@ -642,12 +831,29 @@ def destinations_delete(dest_id):
 @app.route('/profile')
 def profile_page():
     user = get_current_user()
-    if not user:
-        return redirect(url_for('auth_page'))
     tourist = get_current_tourist()
-    if not tourist:
+    is_local_preview = app.config.get('SQLALCHEMY_DATABASE_URI', '').startswith('sqlite:///')
+
+    if not user or not tourist:
+        if is_local_preview:
+            preview_user = user or SimpleNamespace(username='Rudra')
+            preview_tourist = tourist or SimpleNamespace(
+                id=0,
+                safety_score=84,
+                iot_mode_enabled=True,
+                name='Rudra',
+                kyc_type='Aadhaar',
+                kyc_id='795138462',
+                visit_end_date=datetime.now() + timedelta(days=12),
+                digital_id='garuda-preview-45b332105b4303e411e3dac9e44780c580820961',
+                last_known_location='28.6139, 77.2090',
+                phone='+91 9457831890',
+                blynk_token=os.environ.get('BLYNK_AUTH_TOKEN', ''),
+            )
+            return render_template('profile.html', user=preview_user, tourist=preview_tourist, preview_mode=True)
         return redirect(url_for('auth_page'))
-    return render_template('profile.html', user=user, tourist=tourist)
+
+    return render_template('profile.html', user=user, tourist=tourist, preview_mode=False)
 
 @app.route('/admin')
 def admin_dashboard_page():
@@ -1242,24 +1448,35 @@ def tt_list_groups():
     user = get_current_user()
     if not user:
         groups = Group.query.filter_by(group_type='Public').all()
+        member_ids = set()
     else:
         # Return all public groups + groups the user belongs to
-        my_ids  = [m.group_id for m in user.memberships]
-        groups  = Group.query.filter(
-            (Group.group_type == 'Public') | (Group.id.in_(my_ids))
+        member_ids = {m.group_id for m in user.memberships}
+        groups = Group.query.filter(
+            (Group.group_type == 'Public') | (Group.id.in_(member_ids))
         ).all()
 
-    return jsonify([{
-        'id':          g.id,
-        'name':        g.name,
-        'description': g.description,
-        'type':        g.group_type,
-        'owner_id':    g.owner_id,
-        'destination': g.destination.name if g.destination else None,
-        'member_count': g.member_count,
-        'max_members':  g.max_members,
-        'created_at':   g.created_at.isoformat(),
-    } for g in groups])
+    payload = []
+    for group in groups:
+        cover = resolve_group_cover(group)
+        payload.append({
+            'id': group.id,
+            'name': group.name,
+            'description': group.description,
+            'type': group.group_type,
+            'owner_id': group.owner_id,
+            'destination': group.destination.name if group.destination else None,
+            'member_count': group.member_count,
+            'max_members': group.max_members,
+            'created_at': group.created_at.isoformat(),
+            'cover_image': group.cover_image,
+            'cover_url': cover['url'],
+            'cover_mode': cover['mode'],
+            'cover_theme': cover['theme'],
+            'is_member': group.id in member_ids,
+        })
+
+    return jsonify(payload)
 
 
 @app.route('/api/tt/groups', methods=['POST'])
@@ -1269,9 +1486,13 @@ def tt_create_group():
         return jsonify({'error': 'Not authenticated.'}), 401
 
     data = request.get_json(force=True)
-    name       = (data.get('name') or '').strip()
+    name = (data.get('name') or '').strip()
     group_type = data.get('type', 'Public')
-    dest_name  = data.get('destination')
+    dest_name = data.get('destination')
+    try:
+        max_members = int(data.get('max_members', 50))
+    except (TypeError, ValueError):
+        max_members = 50
 
     if not name:
         return jsonify({'error': 'Group name is required.'}), 400
@@ -1281,13 +1502,14 @@ def tt_create_group():
     dest_id = find_or_create_destination(dest_name) if dest_name else None
 
     group = Group(
-        id             = generate_id(),
-        name           = name,
-        description    = data.get('description'),
-        group_type     = group_type,
-        owner_id       = user.id,
+        id = generate_id(),
+        name = name,
+        description = data.get('description'),
+        cover_image = data.get('cover_image'),
+        group_type = group_type,
+        owner_id = user.id,
         destination_id = dest_id,
-        max_members    = int(data.get('max_members', 50)),
+        max_members = max(2, min(max_members, 100)),
     )
     db.session.add(group)
     db.session.flush()
@@ -1309,11 +1531,16 @@ def tt_get_group(group_id):
     g = db.session.get(Group, group_id)
     if not g:
         return jsonify({'error': 'Not found.'}), 404
+    cover = resolve_group_cover(g)
     return jsonify({
         'id': g.id, 'name': g.name, 'description': g.description,
         'type': g.group_type, 'owner_id': g.owner_id,
         'destination': g.destination.name if g.destination else None,
         'member_count': g.member_count, 'max_members': g.max_members,
+        'cover_image': g.cover_image,
+        'cover_url': cover['url'],
+        'cover_mode': cover['mode'],
+        'cover_theme': cover['theme'],
     })
 
 
@@ -1815,10 +2042,14 @@ def init_db():
     with app.app_context():
         try:
             db.create_all()
+            ensure_group_schema()
+            os.makedirs(GROUP_UPLOAD_DIR, exist_ok=True)
             seed_safety_zones()
             print("Database ready.")
         except Exception as e:
             print(f"[DB] Warning: db.create_all() encountered an issue (tables may already exist): {e}")
+            ensure_group_schema()
+            os.makedirs(GROUP_UPLOAD_DIR, exist_ok=True)
             print("Database ready (skipped schema creation).")
 
 

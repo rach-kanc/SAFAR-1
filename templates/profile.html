@@ -1,256 +1,377 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>User Profile — SAFAR</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Garuda Safety Profile - SAFAR</title>
+  <meta
+    name="description"
+    content="Garuda is SAFAR's live safety response system for verified travelers, combining GPS tracking, monitored zones, SOS response, and IoT-linked protection.">
   <link rel="stylesheet" href="/static/profile.css">
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
-<body class="safety-page" data-lang="en">
+<body
+  class="travel-page garuda-page"
+  data-lang="en"
+  data-preview="{{ 'true' if preview_mode else 'false' }}"
+  data-tourist-id="{{ tourist.id }}"
+  data-initial-score="{{ tourist.safety_score }}"
+  data-iot-enabled="{{ 'true' if tourist.iot_mode_enabled else 'false' }}">
+  <div id="petals-container"></div>
 
-<!-- Gita Bar -->
-<div class="gita-bar" id="gita-quote-bar">
-  <span class="gita-bar-icon">📖</span>
-  <div class="gita-bar-text">
-    <span class="gita-sanskrit"></span>
-    <span class="gita-sep">·</span>
-    <span class="gita-translation"></span>
+  <div class="gita-bar" id="gita-quote-bar">
+    <span class="gita-bar-icon">📖</span>
+    <div class="gita-bar-text">
+      <span class="gita-sanskrit"></span>
+      <span class="gita-sep">·</span>
+      <span class="gita-translation"></span>
+    </div>
+    <span class="gita-ref"></span>
+    <span class="gita-hint" data-i18n="gita.hint">click to expand</span>
   </div>
-  <span class="gita-ref"></span>
-</div>
 
-<nav class="navbar navbar-with-bar" id="main-nav">
-  <a href="/" class="nav-logo"><span class="logo-safar">SAFAR</span></a>
-  <div class="nav-links" id="nav-links">
-    <a href="/" data-i18n="nav.home">Home</a>
-    <a href="/groups" data-i18n="nav.groups">Groups</a>
-    <a href="/blockchain" data-i18n="nav.identity">Identity Ledger</a>
-    <a href="/profile" class="nav-badge ast active" data-i18n="nav.safety">🛡️ Safety</a>
-    <a href="/api/auth/logout" class="btn-nav btn-nav-outline" data-i18n="nav.logout">Logout</a>
-    <button id="lang-toggle-btn" title="Toggle Language"><span class="lang-flag">🇯🇳</span><span class="lang-label">EN</span></button>
-  </div>
-  <button class="menu-toggle" id="menu-toggle"><span></span><span></span><span></span></button>
+  <nav class="navbar navbar-with-bar" id="main-nav">
+    <a href="/" class="nav-logo"><span class="logo-safar">SAFAR</span></a>
+    <div class="nav-links" id="nav-links">
+      <a href="/" data-i18n="nav.home">Home</a>
+      <a href="/groups" data-i18n="nav.groups">Groups</a>
+      <a href="/blockchain" data-i18n="nav.identity">Identity Ledger</a>
+      <a href="/travel" data-i18n="nav.ai">AI Assistant</a>
+      <a href="/about" data-i18n="nav.about">About</a>
+      <div class="nav-divider"></div>
+      <a href="/user" class="nav-badge">👤 {{ user.username }}</a>
+      <a href="/profile" class="nav-badge ast active" data-i18n="nav.safety">Safety</a>
+      <a href="/api/auth/logout" class="btn-nav btn-nav-outline" data-i18n="nav.logout">Logout</a>
+      <button id="lang-toggle-btn" title="Toggle Language">
+        <span class="lang-flag">🇮🇳</span>
+        <span class="lang-label">EN</span>
+      </button>
+    </div>
+    <button class="menu-toggle" id="menu-toggle"><span></span><span></span><span></span></button>
   </nav>
 
-  <!-- Majestic Tiger 3D Parallax Section for Safety -->
-  <div class="tiger-hero" data-tilt style="position:relative; height: 60vh; display:flex; align-items:center; justify-content:center; perspective: 1200px; overflow:hidden; border-bottom: 1px solid var(--border); cursor: none;">
-     <div class="tiger-bg" style="position:absolute; inset:0; background: radial-gradient(circle at center, rgba(251, 146, 60, 0.15), transparent 70%); z-index:1;"></div>
-     <img src="/static/images/tiger.png" id="tiger-mascot" class="reveal active" style="height: 120%; object-fit:contain; z-index:2; filter: drop-shadow(0 0 50px rgba(251, 146, 60, 0.4));" alt="">
-  </div>
+  <section class="hero-v2 garuda-hero" id="hero-section">
+    <div class="garuda-bg" aria-hidden="true"></div>
+    <div class="garuda-overlay" aria-hidden="true"></div>
+    <div class="garuda-grade" aria-hidden="true"></div>
+    <div class="garuda-glow" aria-hidden="true"></div>
 
-<div class="safety-layout">
-  <!-- Header -->
-  <div class="card safety-header-card">
-    <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);padding:4px 14px;border-radius:20px;margin-bottom:14px">
-      <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:2px;color:var(--ast)">🛡️ SAFAR User Profile</span>
+    <div class="mandala-bg garuda-mandala" aria-hidden="true">
+      <canvas id="garuda-sigil-canvas"></canvas>
     </div>
-    <h1>Welcome, <span>{{tourist.name}}</span></h1>
-    <div id="gps-status" class="gps-init">⏳ Initializing GPS...</div>
-  </div>
 
-  <!-- Map (full width) -->
-  <div class="card map-card">
-    <div id="userMap"></div>
-  </div>
+    <div class="hero-v2-content garuda-hero-content">
+      <div class="hero-v2-left garuda-hero-copy reveal">
+        <span class="section-tag section-tag-ast" data-i18n="garuda.hero.tag">Garuda Sentinel System</span>
+        <h1 data-i18n="garuda.hero.title">Garuda watches over every verified journey.</h1>
+        <p data-i18n="garuda.hero.desc">
+          Your safety profile now runs on the same modern interface language as the AI assistant page, but tuned for
+          live tracking, geofenced risk, emergency response, and hardware-linked protection.
+        </p>
 
-  <!-- Safety grid -->
-  <div class="safety-grid">
-    <!-- Score + details -->
-    <div class="card">
-      <h3 style="margin-bottom:20px;font-size:1rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Safety Score</h3>
-      <div style="display:flex;align-items:center;gap:22px">
-        <div class="score-ring {% if tourist.safety_score > 75 %}high{% elif tourist.safety_score > 40 %}medium{% else %}low{% endif %}" id="score-ring">
-          <span id="score-num">{{tourist.safety_score}}</span>
-          <span style="font-size:0.6rem;font-family:'DM Sans',sans-serif;font-weight:400">/100</span>
+        <div class="hero-v2-stats garuda-hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-num" id="hero-score">{{ tourist.safety_score }}</span>
+            <span class="hero-stat-label" data-i18n="garuda.hero.stat.score">Safety Score</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num" id="hero-sync">--</span>
+            <span class="hero-stat-label" data-i18n="garuda.hero.stat.sync">Last Sync</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num" id="hero-mode">{{ 'IoT' if tourist.iot_mode_enabled else 'Mobile' }}</span>
+            <span class="hero-stat-label" data-i18n="garuda.hero.stat.mode">Protection Mode</span>
+          </div>
         </div>
-        <div>
-          <div style="display:flex;flex-direction:column;gap:10px">
-            <div style="font-size:0.85rem"><span style="color:var(--text2)">Phone:</span> <strong>{{tourist.phone}}</strong></div>
-            <div style="font-size:0.85rem"><span style="color:var(--text2)">KYC:</span> <strong>{{tourist.kyc_type}} — {{tourist.kyc_id}}</strong></div>
-            <div style="font-size:0.85rem"><span style="color:var(--text2)">Visit ends:</span> <strong>{{tourist.visit_end_date.strftime('%d %b %Y')}}</strong></div>
+
+        <div class="garuda-pill-strip">
+          <span class="garuda-pill" data-i18n="garuda.hero.pill.gps">Live GPS Relay</span>
+          <span class="garuda-pill" data-i18n="garuda.hero.pill.zones">Geo-Fenced Zones</span>
+          <span class="garuda-pill" data-i18n="garuda.hero.pill.iot">IoT SOS Link</span>
+        </div>
+
+        <div class="garuda-hero-actions">
+          <button class="btn btn-ast btn-lg" type="button" onclick="garudaFocusMap()">
+            <i class="fas fa-location-crosshairs"></i>
+            <span data-i18n="garuda.hero.cta.map">Center Live Map</span>
+          </button>
+          <a href="#garuda-operations" class="btn btn-ghost btn-lg">
+            <i class="fas fa-shield-halved"></i>
+            <span data-i18n="garuda.hero.cta.controls">Open Garuda Controls</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="hero-v2-right garuda-hero-visual reveal reveal-delay-1">
+        <div class="garuda-art-frame card-3d" data-tilt>
+          <div class="garuda-art-grid" aria-hidden="true"></div>
+          <div class="garuda-art-glow" aria-hidden="true"></div>
+          <div class="garuda-art-painting" aria-hidden="true"></div>
+          <img class="garuda-art-emblem" src="/static/images/garuda-system.svg" alt="Garuda safety emblem">
+          <div class="garuda-art-caption">
+            <span class="garuda-art-label" data-i18n="garuda.art.label">Live Safety Interface</span>
+            <strong data-i18n="garuda.art.title">Garuda Core</strong>
+            <p data-i18n="garuda.art.copy">
+              Inspired by the guardian bird, tuned for anomaly detection, SOS dispatch, monitored zones, and resilient
+              traveler protection.
+            </p>
+          </div>
+          <div class="garuda-art-orbit garuda-art-orbit-a" aria-hidden="true"></div>
+          <div class="garuda-art-orbit garuda-art-orbit-b" aria-hidden="true"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mayurya-quick-intel garuda-quick-intel reveal">
+    <div class="mayurya-quick-intel-card garuda-quick-intel-card">
+      <div class="mayurya-quick-intel-copy">
+        <span class="section-tag section-tag-ast" data-i18n="garuda.quick.tag">Traveler Safety Profile</span>
+        {% if preview_mode %}
+        <span class="garuda-preview-flag">Local Preview Mode</span>
+        {% endif %}
+        <h2 data-i18n="garuda.quick.title">Garuda keeps your identity, location, and response systems in one cockpit.</h2>
+        <p data-i18n="garuda.quick.desc">
+          This page combines live map tracking, response controls, safety scoring, and hardware sync into a single
+          command view for your current journey.
+        </p>
+      </div>
+      <div class="garuda-profile-chips">
+        <div class="garuda-profile-chip">
+          <span class="garuda-profile-chip-label" data-i18n="garuda.quick.profile">Traveler</span>
+          <strong>{{ tourist.name }}</strong>
+        </div>
+        <div class="garuda-profile-chip">
+          <span class="garuda-profile-chip-label" data-i18n="garuda.quick.kyc">KYC</span>
+          <strong>{{ tourist.kyc_type or 'Pending' }}</strong>
+        </div>
+        <div class="garuda-profile-chip">
+          <span class="garuda-profile-chip-label" data-i18n="garuda.quick.visit">Visit Ends</span>
+          <strong>{{ tourist.visit_end_date.strftime('%d %b %Y') if tourist.visit_end_date else '—' }}</strong>
+        </div>
+        <div class="garuda-profile-chip">
+          <span class="garuda-profile-chip-label" data-i18n="garuda.quick.id">Digital ID</span>
+          <strong>{{ (tourist.digital_id[:16] ~ '...') if tourist.digital_id else 'Pending' }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mayurya-section garuda-section reveal">
+    <div class="section-header">
+      <span class="section-tag section-tag-ast" data-i18n="garuda.actions.tag">Quick Actions</span>
+      <h2 data-i18n="garuda.actions.title">What do you want Garuda to do right now?</h2>
+      <p data-i18n="garuda.actions.desc">Jump directly into the control you need without digging through the page.</p>
+    </div>
+    <div class="travel-actions garuda-actions">
+      <button class="travel-action-card garuda-action-card" type="button" onclick="garudaFocusMap()">
+        <span class="ta-icon"><i class="fas fa-map-location-dot"></i></span>
+        <h4 data-i18n="garuda.actions.track.title">Track My Position</h4>
+        <p data-i18n="garuda.actions.track.copy">Refresh your current GPS lock, center the map, and inspect nearby safety zones.</p>
+      </button>
+      <button class="travel-action-card garuda-action-card" type="button" onclick="garudaScrollToEmergency()">
+        <span class="ta-icon"><i class="fas fa-siren-on"></i></span>
+        <h4 data-i18n="garuda.actions.emergency.title">Emergency Response</h4>
+        <p data-i18n="garuda.actions.emergency.copy">Trigger the panic flow instantly when you need authorities and responders alerted.</p>
+      </button>
+      <button class="travel-action-card garuda-action-card" type="button" onclick="garudaScrollToIot()">
+        <span class="ta-icon"><i class="fas fa-microchip"></i></span>
+        <h4 data-i18n="garuda.actions.iot.title">Configure IoT Link</h4>
+        <p data-i18n="garuda.actions.iot.copy">Bind a hardware SOS tracker through Blynk Cloud and let Garuda listen in real time.</p>
+      </button>
+      <button class="travel-action-card garuda-action-card" type="button" onclick="garudaRefreshNow()">
+        <span class="ta-icon"><i class="fas fa-arrows-rotate"></i></span>
+        <h4 data-i18n="garuda.actions.refresh.title">Force Safety Sync</h4>
+        <p data-i18n="garuda.actions.refresh.copy">Push a fresh location update now instead of waiting for the next automatic cycle.</p>
+      </button>
+    </div>
+  </section>
+
+  <section class="garuda-operations reveal" id="garuda-operations">
+    <div class="section-header">
+      <span class="section-tag section-tag-ast" data-i18n="garuda.operations.tag">Live Operations</span>
+      <h2 data-i18n="garuda.operations.title">Garuda command surface</h2>
+      <p data-i18n="garuda.operations.desc">Everything safety-critical stays visible: your map, score, response state, and device link.</p>
+    </div>
+
+    <div class="garuda-ops-grid">
+      <div class="card garuda-map-card">
+        <div class="garuda-card-head">
+          <div>
+            <span class="garuda-card-kicker" data-i18n="garuda.map.kicker">Live Monitoring</span>
+            <h3 data-i18n="garuda.map.title">Traveler position and monitored zone map</h3>
+          </div>
+          <div class="garuda-live-pill" id="gps-status">Initializing GPS link...</div>
+        </div>
+        <div id="userMap" aria-label="Garuda live map"></div>
+        <div class="garuda-map-meta">
+          <div class="garuda-map-meta-item">
+            <span data-i18n="garuda.map.zonecount">Monitored Zones</span>
+            <strong id="zone-count">0</strong>
+          </div>
+          <div class="garuda-map-meta-item">
+            <span data-i18n="garuda.label.location">Last Known Location</span>
+            <strong id="last-location">{{ tourist.last_known_location or 'Awaiting live coordinates' }}</strong>
           </div>
         </div>
       </div>
-      <hr style="border:none;height:1px;background:var(--border);margin:18px 0">
-      <p style="font-size:0.72rem;color:var(--text3);word-break:break-all"><strong style="color:var(--text2)">Digital ID:</strong> {{tourist.digital_id[:40]}}...</p>
-    </div>
 
-    <!-- Panic button -->
-    <div class="card" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center">
-      <h3 style="font-size:1rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px">Emergency Alert</h3>
-      <button id="panic-btn">
-        <span style="font-size:1.5rem">🆘</span>
-        <span>PANIC</span>
-      </button>
-      <p style="font-size:0.78rem;color:var(--text3);max-width:200px;line-height:1.5">Tap to instantly alert authorities with your location</p>
-    </div>
+      <div class="garuda-side-stack">
+        <div class="card garuda-side-panel">
+          <div class="garuda-panel-header">
+            <div>
+              <span class="garuda-card-kicker" data-i18n="garuda.panel.overview.kicker">Profile Overview</span>
+              <h3 data-i18n="garuda.panel.overview.title">Garuda safety score</h3>
+            </div>
+            <span class="garuda-state-badge" id="response-state">Response Ready</span>
+          </div>
 
-    <!-- IoT Device Section -->
-    <div class="card" style="display:flex;flex-direction:column;gap:16px;">
-        <h3 style="font-size:1rem;color:var(--text2);text-transform:uppercase;letter-spacing:1px">🚀 IoT Hardware</h3>
-        <p style="font-size:0.75rem; color:var(--text3); text-align:left; margin-top:-10px;">Link external GPS/SOS hardware via Blynk Cloud.</p>
-        
-        <div style="text-align:left; display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.75rem; color:var(--text2);">Sync Mode</label>
-            <select id="iot-mode" style="width:100%; background:rgba(255,255,10,0.05); color:#fff; border:1px solid var(--border); padding:8px; border-radius:6px;">
-                <option value="false" {% if not tourist.iot_mode_enabled %}selected{% endif %}>📱 Mobile Only</option>
-                <option value="true" {% if tourist.iot_mode_enabled %}selected{% endif %}>📡 IoT Hardware Mode</option>
+          <div class="garuda-score-wrap">
+            <div class="score-ring {% if tourist.safety_score > 75 %}high{% elif tourist.safety_score > 40 %}medium{% else %}low{% endif %}" id="score-ring">
+              <span id="score-num">{{ tourist.safety_score }}</span>
+              <small>/100</small>
+            </div>
+            <div class="garuda-overview-meta">
+              <div class="garuda-meta-item">
+                <span data-i18n="garuda.label.phone">Phone</span>
+                <strong>{{ tourist.phone }}</strong>
+              </div>
+              <div class="garuda-meta-item">
+                <span data-i18n="garuda.label.kyc">KYC</span>
+                <strong>{{ (tourist.kyc_type or 'Pending') ~ (' - ' ~ tourist.kyc_id if tourist.kyc_id else '') }}</strong>
+              </div>
+              <div class="garuda-meta-item">
+                <span data-i18n="garuda.label.visit">Visit Ends</span>
+                <strong>{{ tourist.visit_end_date.strftime('%d %b %Y') if tourist.visit_end_date else '—' }}</strong>
+              </div>
+              <div class="garuda-meta-item">
+                <span data-i18n="garuda.label.lastsync">Last Sync</span>
+                <strong id="last-sync">Awaiting first sync</strong>
+              </div>
+              <div class="garuda-meta-item garuda-meta-item-wide">
+                <span data-i18n="garuda.label.id">Digital ID</span>
+                <strong class="garuda-digital-id">{{ tourist.digital_id or 'Pending' }}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card garuda-side-panel" id="garuda-emergency-panel">
+          <div class="garuda-panel-header">
+            <div>
+              <span class="garuda-card-kicker" data-i18n="garuda.panel.response.kicker">Emergency Response</span>
+              <h3 data-i18n="garuda.panel.response.title">One-tap panic dispatch</h3>
+            </div>
+          </div>
+          <p class="garuda-panel-copy" data-i18n="garuda.panel.response.copy">
+            Trigger Garuda's emergency flow to set your safety score to zero and notify authorities with your latest
+            tracked location.
+          </p>
+          <button id="panic-btn" type="button">
+            <i class="fas fa-triangle-exclamation"></i>
+            <span data-i18n="garuda.panel.response.button">Send Panic Alert</span>
+          </button>
+          <p class="garuda-danger-note" data-i18n="garuda.panel.response.note">
+            Use only in real emergencies. Garuda treats this as a critical distress event.
+          </p>
+        </div>
+
+        <div class="card garuda-side-panel" id="garuda-iot-panel">
+          <div class="garuda-panel-header">
+            <div>
+              <span class="garuda-card-kicker" data-i18n="garuda.panel.iot.kicker">Hardware Sync</span>
+              <h3 data-i18n="garuda.panel.iot.title">IoT device bridge</h3>
+            </div>
+          </div>
+          <p class="garuda-panel-copy" data-i18n="garuda.panel.iot.copy">
+            Link a physical SOS or GPS device through Blynk Cloud so Garuda can react to hardware events immediately.
+          </p>
+          <div class="form-group">
+            <label for="iot-mode" data-i18n="garuda.panel.iot.mode">Protection Mode</label>
+            <select id="iot-mode">
+              <option value="false" {% if not tourist.iot_mode_enabled %}selected{% endif %} data-i18n="garuda.panel.iot.mobile">Mobile Only</option>
+              <option value="true" {% if tourist.iot_mode_enabled %}selected{% endif %} data-i18n="garuda.panel.iot.hardware">IoT Hardware</option>
             </select>
+          </div>
+          <div class="form-group">
+            <label for="blynk-token" data-i18n="garuda.panel.iot.token">Blynk Auth Token</label>
+            <input
+              type="text"
+              id="blynk-token"
+              value="{{ tourist.blynk_token or '' }}"
+              data-i18n-placeholder="garuda.panel.iot.token.placeholder"
+              placeholder="Paste token here">
+          </div>
+          <button class="btn btn-ghost garuda-save-btn" type="button" onclick="saveIoTConfig()">
+            <i class="fas fa-link"></i>
+            <span data-i18n="garuda.panel.iot.save">Update IoT Sync</span>
+          </button>
+          <div class="garuda-pin-box">
+            <span data-i18n="garuda.panel.iot.pins">Pins Required</span>
+            <strong data-i18n="garuda.panel.iot.pins.value">V1: Latitude | V2: Longitude | V3: SOS</strong>
+          </div>
         </div>
+      </div>
+    </div>
+  </section>
 
-        <div style="text-align:left; display:flex; flex-direction:column; gap:8px;">
-            <label style="font-size:0.75rem; color:var(--text2);">Blynk Auth Token</label>
-            <input type="text" id="blynk-token" value="{{ tourist.blynk_token or '' }}" placeholder="Paste Token Here..." 
-                   style="width:100%; background:rgba(0,0,0,0.2); color:var(--primary); border:1px solid var(--border); padding:8px; border-radius:6px; font-family:monospace; font-size:0.8rem;">
-        </div>
+  <section class="mayurya-section garuda-section garuda-zone-section reveal">
+    <div class="section-header">
+      <span class="section-tag section-tag-ast" data-i18n="garuda.zones.tag">Zone Network</span>
+      <h2 data-i18n="garuda.zones.title">Active safety zones Garuda is watching</h2>
+      <p data-i18n="garuda.zones.desc">These monitored regions affect your score when your live location enters their radius.</p>
+    </div>
+    <div class="garuda-zone-grid" id="garuda-zone-list"></div>
+  </section>
 
-        <button onclick="saveIoTConfig()" class="btn-nav btn-nav-fill" style="padding:10px; font-size:0.85rem;">
-            Update IoT Sync
-        </button>
+  <footer class="footer-v2">
+    <div class="footer-v2-grid">
+      <div class="footer-v2-brand">
+        <div class="footer-logo"><span class="logo-safar">SAFAR</span></div>
+        <p data-i18n="footer.brand">India's first AI-powered group travel platform with real-time tourist safety.</p>
+      </div>
+      <div class="footer-v2-col">
+        <h4 data-i18n="footer.quick">Quick Links</h4>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/groups" data-i18n="footer.groups">Find Groups</a>
+        <a href="/travel" data-i18n="footer.ai">AI Assistant</a>
+        <a href="/about" data-i18n="nav.about">About</a>
+      </div>
+      <div class="footer-v2-col">
+        <h4 data-i18n="footer.safety.title">Safety</h4>
+        <a href="/profile" data-i18n="footer.safety.dashboard">Safety Dashboard</a>
+        <a href="/auth" data-i18n="footer.safety.register">Register Tourist</a>
+      </div>
+      <div class="footer-v2-col">
+        <h4 data-i18n="footer.resources.title">Resources</h4>
+        <a href="/blockchain" data-i18n="footer.resources.emergency">Emergency Contacts</a>
+        <a href="/travel" data-i18n="footer.ai">AI Assistant</a>
+      </div>
+    </div>
+    <div class="footer-v2-bottom">
+      <p data-i18n="footer.copy">© 2025 SAFAR - Built with care by Team Safar</p>
+    </div>
+  </footer>
 
-        <div style="margin-top:10px; padding:10px; background:rgba(0,0,0,0.2); border-radius:10px; text-align:left; border-left:4px solid var(--primary);">
-            <p style="font-size:0.65rem; color:var(--text3); margin:0;"><strong>Pins Required:</strong><br>V1: Latitude | V2: Longitude | V3: SOS</p>
-        </div>
+  <div class="gita-modal-overlay" id="gita-full-modal">
+    <div class="gita-modal-box">
+      <div class="gita-modal-diya">🪔</div>
+      <div class="gita-modal-sanskrit"></div>
+      <div class="gita-modal-hindi"></div>
+      <div class="gita-modal-english"></div>
+      <div class="gita-modal-ref"></div>
+      <button class="gita-modal-close" type="button">✕ Close</button>
     </div>
   </div>
-</div>
 
-<footer>
-  <div class="footer-logo"><span class="logo-safar">SAFAR</span></div>
-  <p><a href="/blockchain" style="color:var(--text3);text-decoration:none">⛓️ Identity Ledger Security Hub</a></p>
-  <p>© 2025 Mini Project</p>
-</footer>
-
-<script src="/static/script.js"></script>
-<script>
-let userMap, userMarker;
-
-function initMap() {
-  userMap = L.map('userMap').setView([28.367, 79.43], 5);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '© CARTO © OpenStreetMap' }).addTo(userMap);
-  fetchZones();
-}
-
-async function fetchZones() {
-  const res = await fetch('/api/safety/zones');
-  const data = await res.json();
-  data.forEach(z => {
-    const color = z.regional_score > 80 ? '#4ade80' : z.regional_score > 60 ? '#60a5fa' : z.regional_score > 30 ? '#fb923c' : '#f87171';
-    L.circle([z.latitude, z.longitude], { color, fillColor: color, fillOpacity: 0.12, radius: z.radius * 1000 })
-      .addTo(userMap)
-      .bindPopup(`<b>${z.name}</b><br>Safety Score: ${z.regional_score}`);
-  });
-}
-
-async function sendLocation() {
-  if (!navigator.geolocation) {
-    setGPS('err', '❌ Geolocation not supported');
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(async pos => {
-    const { latitude: lat, longitude: lon } = pos.coords;
-    if (userMap) {
-      userMap.setView([lat, lon], 14);
-      if (!userMarker) userMarker = L.marker([lat, lon]).addTo(userMap).bindPopup('Your location');
-      else userMarker.setLatLng([lat, lon]);
-    }
-    setGPS('ok', `✅ GPS Active — ${new Date().toLocaleTimeString()}`);
-    try {
-      const r = await fetch('/api/safety/update_location', {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({ latitude: lat, longitude: lon })
-      });
-      if (r.ok) {
-        const d = await r.json();
-        
-        document.getElementById('score-num').textContent = d.safety_score;
-        const ring = document.getElementById('score-ring');
-        ring.className = 'score-ring ' + (d.safety_score > 75 ? 'high' : d.safety_score > 40 ? 'medium' : 'low');
-        
-        // IoT Hardware SOS Popup Detection using Explicit Flag
-        if (d.is_panicking && sessionStorage.getItem('panicAlertShown') !== 'true') {
-            sessionStorage.setItem('panicAlertShown', 'true');
-            alert('🚨 HARDWARE SOS DETECTED: Your physical IoT SOS button was pushed. Authorities have been notified!');
-        } else if (!d.is_panicking) {
-            sessionStorage.removeItem('panicAlertShown'); // Reset when panic is cleared / expires
-        }
-      }
-    } catch(e) { setGPS('err', '❌ Sync failed'); }
-  }, () => setGPS('err', '❌ GPS permission denied'), { enableHighAccuracy: true });
-}
-
-function setGPS(type, msg) {
-  const el = document.getElementById('gps-status');
-  el.textContent = msg;
-  el.className = 'gps-' + type;
-}
-
-document.getElementById('panic-btn').addEventListener('click', async () => {
-  if (!confirm('Send PANIC alert to authorities? This will set your safety score to 0.')) return;
-  try {
-    const r = await fetch('/api/safety/panic', { method: 'POST' });
-    if (r.ok) {
-      document.getElementById('score-num').textContent = '0';
-      document.getElementById('score-ring').className = 'score-ring low';
-      sessionStorage.setItem('panicAlertShown', 'true');
-      alert('🆘 Panic alert sent. Authorities have been notified.');
-    } else {
-      const d = await r.json();
-      alert('Failed: ' + (d.error || 'Unknown error'));
-    }
-  } catch(e) { alert('Network error'); }
-});
-
-
-  async function saveIoTConfig() {
-    const token = document.getElementById('blynk-token').value.trim();
-    const enabled = document.getElementById('iot-mode').value === 'true';
-    if (!token && enabled) { alert('Please enter a Blynk Token to enable IoT mode.'); return; }
-    try {
-      const res = await fetch('/api/iot/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, enabled })
-      });
-      if (res.ok) { alert('IoT Configuration updated! Cloud sync active.'); location.reload(); }
-      else { const d = await res.json(); alert('Error: ' + d.error); }
-    } catch (e) { alert('Connection error.'); }
-  }
-
-  window.onload = () => { initMap(); sendLocation(); setInterval(sendLocation, 15000); };
-</script>
-
-<!-- ZERO-LATENCY HARDWARE SOS LISTENER -->
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-<script>
-  const socket = io();
-  socket.on('hardware_sos_triggered', function(data) {
-    if (String(data.tourist_id) === "{{ tourist.id }}") {
-        sessionStorage.setItem('panicAlertShown', 'true'); // Silence the 5-sec GPS loop
-        // Hard set score to 0 visually immediately
-        document.getElementById('score-num').textContent = '0';
-        document.getElementById('score-ring').className = 'score-ring low';
-        alert('🚨 HARDWARE SOS DETECTED: Your physical IoT SOS button was pushed. Authorities have been notified!');
-    }
-  });
-</script>
-
-<script>
-  // Parallax scroll effect for Tiger
-  window.addEventListener('scroll', () => {
-      const scrolled = window.scrollY;
-      const tiger = document.getElementById('tiger-mascot');
-      if (tiger && scrolled < window.innerHeight) {
-          const translateY = 30 - (scrolled * 0.2);
-          const scale = 1 + (scrolled * 0.0004);
-          tiger.style.transform = `translateZ(80px) translateY(${translateY}px) scale(${scale})`;
-      }
-  });
-</script>
-
+  <script src="/static/script.js"></script>
+  <script src="/static/profile.js"></script>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
   <script src="/static/dictionary-agent.js"></script>
   <script src="/static/translator-core.js"></script>
   <script src="/static/translators/profile.translator.js"></script>
   <script src="/static/mayurya-bubble.js"></script>
-</body></html>
+</body>
+</html>

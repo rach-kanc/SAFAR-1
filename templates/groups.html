@@ -1,16 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Travel Groups — SAFAR</title>
+  <title>Travel Circles - SAFAR</title>
+  <meta
+    name="description"
+    content="Create photo-first travel groups on SAFAR, upload a group cover, discover public circles, and build private crews with an Indian culture visual language.">
   <link rel="stylesheet" href="/static/groups.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+<body class="travel-page sangha-page" data-lang="en">
+  <div id="petals-container"></div>
 
-<body class="groups-page" data-lang="en">
-
-  <!-- Gita Bar -->
   <div class="gita-bar" id="gita-quote-bar">
     <span class="gita-bar-icon">📖</span>
     <div class="gita-bar-text">
@@ -19,169 +21,496 @@
       <span class="gita-translation"></span>
     </div>
     <span class="gita-ref"></span>
+    <span class="gita-hint" data-i18n="gita.hint">click to expand</span>
   </div>
 
-  <!-- Discord Sidebar -->
   <nav class="navbar navbar-with-bar" id="main-nav">
     <a href="/" class="nav-logo"><span class="logo-safar">SAFAR</span></a>
     <div class="nav-links" id="nav-links">
       <a href="/" data-i18n="nav.home">Home</a>
       <a href="/groups" class="active" data-i18n="nav.groups">Groups</a>
-      <a href="/travel" data-i18n="nav.ai">AI Assistant</a>
       <a href="/blockchain" data-i18n="nav.identity">Identity Ledger</a>
+      <a href="/travel" data-i18n="nav.ai">AI Assistant</a>
       <a href="/about" data-i18n="nav.about">About</a>
       <div class="nav-divider"></div>
-      {% if username %}
-      <a href="/user" class="nav-badge">👤 {{username}}</a>
-      <a href="/profile" class="nav-badge ast" data-i18n="nav.safety">🛡️ Safety</a>
+      <a href="/user" class="nav-badge">👤 {{ username }}</a>
+      <a href="/profile" class="nav-badge ast" data-i18n="nav.safety">Safety</a>
       <a href="/api/auth/logout" class="btn-nav btn-nav-outline" data-i18n="nav.logout">Logout</a>
-      {% else %}
-      <a href="/auth" class="btn-nav btn-nav-outline" data-i18n="nav.login">Login</a>
-      <a href="/auth" class="btn-nav btn-nav-fill" data-i18n="nav.getstarted">Register</a>
-      {% endif %}
-      <button id="lang-toggle-btn" title="Toggle Language"><span class="lang-flag">🇯🇳</span><span
-          class="lang-label">EN</span></button>
+      <button id="lang-toggle-btn" title="Toggle Language">
+        <span class="lang-flag">🇮🇳</span>
+        <span class="lang-label">EN</span>
+      </button>
     </div>
     <button class="menu-toggle" id="menu-toggle"><span></span><span></span><span></span></button>
   </nav>
 
-  <div class="groups-hero">
-    <h1>✈️ Find Your Travel Crew</h1>
-    <p>Browse groups, join adventures, or create your own travel gang.</p>
-  </div>
+  <section class="hero-v2 sangha-hero" id="hero-section">
+    <div class="sangha-hero-bg" id="groups-hero-bg" aria-hidden="true"></div>
+    <div class="sangha-hero-overlay" aria-hidden="true"></div>
+    <div class="sangha-hero-grade" aria-hidden="true"></div>
+    <div class="sangha-hero-glow" aria-hidden="true"></div>
 
-  <div class="groups-layout">
-    <!-- SIDEBAR: Create group + manage destinations -->
-    <aside class="groups-sidebar">
-      <!-- Create Group -->
-      <div class="card card-tt">
-        <h3 style="margin-bottom:18px;font-size:1.05rem">➕ Create a Group</h3>
-        <form method="POST" action="/groups" style="display:flex;flex-direction:column;gap:13px">
-          <div class="form-group"><label>Group Name</label><input type="text" name="group_name"
-              placeholder="e.g. Manali Squad 2025" required></div>
-          <div class="form-group"><label>Type</label>
-            <select name="group_type" required>
-              <option value="" disabled selected>Select type</option>
-              <option value="Public">Public</option>
-              <option value="Private">Private</option>
-            </select>
-          </div>
-          <div class="form-group"><label>Destination</label>
-            <input list="dest-list" name="destination_name" placeholder="Type or select..." required autocomplete="off">
-            <datalist id="dest-list">{% for d in destinations %}<option value="{{d.destination_name}}">{% endfor
-                %}</datalist>
-          </div>
-          <div class="form-group"><label>Description (optional)</label><textarea name="group_description"
-              placeholder="What's the plan?" style="min-height:72px"></textarea></div>
-          <button type="submit" class="btn btn-tt" style="width:100%">Create Group</button>
-        </form>
-      </div>
+    <div class="hero-v2-content sangha-hero-content">
+      <div class="hero-v2-left sangha-hero-copy reveal">
+        <span class="section-tag section-tag-india" data-i18n="groups.hero.tag">Travel Circles</span>
+        <h1 data-i18n="groups.hero.title">Build a travel crew the way stories spread.</h1>
+        <p data-i18n="groups.hero.desc">
+          Create public or private circles, upload a memorable group cover, and browse photo-first travel squads in a
+          faster, more expressive SAFAR interface.
+        </p>
 
-      <!-- Manage Destinations -->
-      <div class="card">
-        <h3 style="margin-bottom:14px;font-size:1.05rem">📍 Manage Destinations</h3>
-        <form method="POST" action="/destinations/add"
-          style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px">
-          <input type="text" name="destination_name" placeholder="Destination name" required>
-          <input type="text" name="country" placeholder="Country">
-          <button type="submit" class="btn btn-ghost btn-sm" style="grid-column:1/-1">+ Add Destination</button>
-        </form>
-        <div style="max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:7px">
-          {% for d in destinations %}
-          <div class="dest-list-item">
-            <form method="POST" action="/destinations/edit/{{d.destination_id}}" style="display:contents">
-              <input type="text" name="destination_name" value="{{d.destination_name}}" style="min-width:0">
-              <input type="text" name="country" value="{{d.country or ''}}" style="min-width:0">
-              <button type="submit" class="btn btn-ghost btn-sm">💾</button>
-            </form>
-            <a href="/destinations/delete/{{d.destination_id}}" class="btn btn-danger btn-sm"
-              onclick="return confirm('Delete this destination?')">🗑️</a>
+        <div class="hero-v2-stats sangha-hero-stats">
+          <div class="hero-stat">
+            <span class="hero-stat-num">{{ stats.group_count }}</span>
+            <span class="hero-stat-label" data-i18n="groups.hero.stat.groups">Active Circles</span>
           </div>
-          {% else %}
-          <p style="color:var(--text3);font-size:0.85rem;text-align:center;padding:12px">No destinations yet.</p>
-          {% endfor %}
+          <div class="hero-stat">
+            <span class="hero-stat-num">{{ stats.destination_count }}</span>
+            <span class="hero-stat-label" data-i18n="groups.hero.stat.destinations">Destinations</span>
+          </div>
+          <div class="hero-stat">
+            <span class="hero-stat-num">{{ stats.my_group_count }}</span>
+            <span class="hero-stat-label" data-i18n="groups.hero.stat.mine">My Crews</span>
+          </div>
+        </div>
+
+        <div class="sangha-pill-row">
+          <span class="sangha-pill" data-i18n="groups.hero.pill.photos">Photo Covers</span>
+          <span class="sangha-pill" data-i18n="groups.hero.pill.private">Private Access</span>
+          <span class="sangha-pill" data-i18n="groups.hero.pill.culture">Indian Heritage Mood</span>
+        </div>
+
+        <div class="sangha-hero-actions">
+          <a href="#group-create-panel" class="btn btn-ast btn-lg">
+            <i class="fas fa-camera-retro"></i>
+            <span data-i18n="groups.hero.cta.create">Create a Circle</span>
+          </a>
+          <a href="#groups-discover" class="btn btn-ghost btn-lg">
+            <i class="fas fa-compass"></i>
+            <span data-i18n="groups.hero.cta.explore">Explore Crews</span>
+          </a>
         </div>
       </div>
-    </aside>
 
-    <!-- MAIN: Group list -->
-    <div>
-      <div class="filter-bar">
-        <input type="search" id="g-search" placeholder="🔍 Search groups...">
-        <select id="g-type-filter">
-          <option value="All">All Types</option>
-          <option value="Public">Public</option>
-          <option value="Private">Private</option>
-        </select>
-      </div>
-
-      <div class="groups-list" id="groups-list">
-        {% if groups %}
-        {% for g in groups %}
-        <div class="group-card" data-name="{{g.group_name|lower}}" data-dest="{{g.destination_name|lower}}"
-          data-type="{{g.group_type}}">
-          <div class="group-card-header">
-            <h3>{{g.group_name}}</h3>
-            <span class="badge {{'badge-tt' if g.group_type == 'Public' else 'badge-ast'}}">{{g.group_type}}</span>
+      <div class="hero-v2-right sangha-hero-visual reveal reveal-delay-1">
+        <div class="sangha-art-frame card-3d" data-tilt>
+          <div class="sangha-art-shell">
+            <div class="sangha-art-shell-top">
+              <span class="sangha-shell-dot"></span>
+              <span class="sangha-shell-dot"></span>
+              <span class="sangha-shell-dot"></span>
+            </div>
+            {% set featured_group = story_groups[0] if story_groups else None %}
+            <div class="sangha-art-story-grid">
+              {% if featured_group %}
+              <a
+                href="#group-card-{{ featured_group.group_id }}"
+                class="sangha-art-story sangha-art-story-feature sangha-cover-shell sangha-cover-theme-{{ featured_group.cover_theme }}"
+                data-group-jump="explore"
+                data-cover-shell>
+                <img src="{{ featured_group.cover_url }}" alt="{{ featured_group.group_name }} story cover" loading="lazy">
+                <div class="sangha-art-story-copy">
+                  <span class="sangha-art-story-kicker">Featured Circle</span>
+                  <strong>{{ featured_group.group_name }}</strong>
+                  <span>{{ featured_group.destination_name or 'Across India' }}</span>
+                </div>
+              </a>
+              {% else %}
+              <div class="sangha-art-story sangha-art-story-feature">
+                <img src="/static/images/dest_jaipur.png" alt="Heritage circle" loading="lazy">
+                <div class="sangha-art-story-copy">
+                  <strong data-i18n="groups.sample.heritage">Heritage Run</strong>
+                  <span>Rajasthan</span>
+                </div>
+              </div>
+              {% endif %}
+            </div>
           </div>
-          <div class="group-card-meta">
-            <span>📍 {{g.destination_name or 'No destination'}}</span>
-            <span>👤 Owner: {{g.owner_name}}</span>
-            <span>👥 {{g.member_count}} members</span>
-          </div>
-          <p>{{g.group_description or 'No description provided.'}}</p>
-          <div class="group-card-actions">
-            {% if g.is_member %}
-            <a href="/groups/chat/{{g.group_id}}" class="btn btn-tt btn-sm">💬 Chat</a>
-            {% if user.userid == g.owner_id %}
-            <a href="/groups/delete/{{g.group_id}}" class="btn btn-danger btn-sm"
-              onclick="return confirm('Permanently delete this group?')">🗑️ Delete</a>
+          <div class="sangha-art-caption">
+            {% if featured_group %}
+            <span class="sangha-art-kicker">Featured Circle</span>
+            <strong>{{ featured_group.group_name }}</strong>
+            <p>{{ featured_group.group_description or 'Jump straight into the highlighted crew, then browse the full grid below for more circles.' }}</p>
+            <a href="#group-card-{{ featured_group.group_id }}" class="btn btn-ghost btn-sm" data-group-jump="explore">
+              <i class="fas fa-arrow-down"></i>
+              <span>Open Featured Card</span>
+            </a>
             {% else %}
-            <a href="/groups/leave/{{g.group_id}}" class="btn btn-ghost btn-sm">🚪 Leave</a>
-            {% endif %}
-            {% else %}
-            <a href="/groups/join/{{g.group_id}}" class="btn btn-success btn-sm">👉 Join</a>
+            <span class="sangha-art-kicker" data-i18n="groups.art.kicker">Photo-First Grouping</span>
+            <strong data-i18n="groups.art.title">A faster crew interface</strong>
+            <p data-i18n="groups.art.desc">
+              Inspired by story trays and travel postcards, but tuned for real group creation, joins, and destination discovery.
+            </p>
             {% endif %}
           </div>
         </div>
-        {% endfor %}
-        {% else %}
-        <div style="text-align:center;padding:60px;border:1px dashed var(--border);border-radius:var(--radius2)">
-          <p style="font-size:2rem;margin-bottom:12px">✈️</p>
-          <h3 style="color:var(--tt)">No groups yet!</h3>
-          <p style="color:var(--text2);margin-top:8px">Create the first one and start your adventure.</p>
-        </div>
-        {% endif %}
       </div>
     </div>
-  </div>
+  </section>
 
-  <footer>
-    <div class="footer-logo"><span class="logo-safar">SAFAR</span></div>
-    <p><a href="/blockchain" style="color:var(--text3);text-decoration:none">⛓️ Identity Ledger Security Hub</a></p>
-    <p>© 2025 Mini Project</p>
+  <section class="sangha-jump-shell">
+    <div class="sangha-jump-grid">
+      <a href="#group-create-panel" class="sangha-jump-card" data-group-jump="create">
+        <span class="sangha-jump-kicker">Create Group</span>
+        <strong>Start a new travel crew</strong>
+        <p>Set the destination, upload a cover image, and publish your trip in one pass.</p>
+      </a>
+      <a href="#groups-explore-panel" class="sangha-jump-card" data-group-jump="explore">
+        <span class="sangha-jump-kicker">Explore Groups</span>
+        <strong>Browse active travel squads</strong>
+        <p>Search, filter, and jump straight into public or private groups already live on SAFAR.</p>
+      </a>
+    </div>
+  </section>
+
+  <section class="mayurya-quick-intel sangha-quick-intel reveal">
+    <div class="mayurya-quick-intel-card sangha-quick-intel-card">
+      <div class="mayurya-quick-intel-copy">
+        <span class="section-tag section-tag-india" data-i18n="groups.quick.tag">Crew Overview</span>
+        <h2 data-i18n="groups.quick.title">Public circles for discovery. Private circles for trusted plans.</h2>
+        <p data-i18n="groups.quick.desc">
+          Every group card now carries a strong visual identity, quick travel context, and direct join or chat actions.
+        </p>
+      </div>
+      <div class="sangha-quick-metrics">
+        <div class="sangha-metric-chip">
+          <span data-i18n="groups.quick.public">Public</span>
+          <strong>{{ stats.public_count }}</strong>
+        </div>
+        <div class="sangha-metric-chip">
+          <span data-i18n="groups.quick.private">Private</span>
+          <strong>{{ stats.private_count }}</strong>
+        </div>
+        <div class="sangha-metric-chip">
+          <span data-i18n="groups.quick.mine">Joined</span>
+          <strong>{{ stats.my_group_count }}</strong>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sangha-stories reveal">
+    <div class="section-header">
+      <span class="section-tag section-tag-india" data-i18n="groups.stories.tag">Crew Stories</span>
+      <h2 data-i18n="groups.stories.title">Tap into the most active travel circles.</h2>
+      <p data-i18n="groups.stories.desc">A Snapchat-inspired story rail, but grounded in real groups you can join or manage.</p>
+    </div>
+
+    <div class="sangha-story-strip">
+      {% if story_groups %}
+        {% for g in story_groups %}
+        <button class="sangha-story-card" type="button" data-story-target="group-card-{{ g.group_id }}">
+          <span class="sangha-story-ring sangha-cover-shell sangha-cover-theme-{{ g.cover_theme }} {{ 'has-cover' if g.cover_url else 'is-fallback' }}" data-cover-shell>
+            {% if g.cover_url %}
+            <img src="{{ g.cover_url }}" alt="{{ g.group_name }} cover" loading="lazy">
+            {% endif %}
+            <span class="sangha-story-ring-fallback">{{ g.story_initials[0] }}</span>
+          </span>
+          <strong>{{ g.group_name }}</strong>
+          <span>{{ g.destination_name or 'Across India' }}</span>
+        </button>
+        {% endfor %}
+      {% else %}
+        <div class="sangha-story-empty card">
+          <h3 data-i18n="groups.stories.empty.title">No circles yet.</h3>
+          <p data-i18n="groups.stories.empty.desc">Start the first one and set the visual tone for the community.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
+  <section class="sangha-main reveal" id="groups-discover">
+    <nav class="sangha-main-nav" aria-label="Group workspace">
+      <a href="#group-create-panel" data-group-jump="create">Create Group</a>
+      <a href="#groups-explore-panel" data-group-jump="explore">Explore Groups</a>
+    </nav>
+
+    <div class="sangha-main-grid">
+      <aside class="sangha-sidebar">
+        <div class="card sangha-create-card" id="group-create-panel">
+          <div class="sangha-panel-head">
+            <span class="section-tag section-tag-india" data-i18n="groups.create.tag">Create Circle</span>
+            <h3 data-i18n="groups.create.title">Launch a new travel squad</h3>
+            <p data-i18n="groups.create.desc">Give your crew a destination, privacy mode, cover image, and short trip brief.</p>
+          </div>
+
+          <form method="POST" action="/groups" enctype="multipart/form-data" class="sangha-create-form">
+            <div class="sangha-cover-preview" id="group-photo-preview" data-default-image="/static/images/dest_jaipur.png">
+              <div class="sangha-cover-preview-copy">
+                <span data-i18n="groups.create.previewtag">Cover Preview</span>
+                <strong data-i18n="groups.create.previewtitle">Your group story starts here</strong>
+              </div>
+            </div>
+
+            <label class="sangha-upload-field" for="group-photo-input">
+              <span class="sangha-upload-icon"><i class="fas fa-images"></i></span>
+              <span class="sangha-upload-copy">
+                <strong data-i18n="groups.create.upload.title">Upload Group Photo</strong>
+                <small id="group-photo-name" data-default-label="JPG, PNG, WEBP or GIF" data-i18n="groups.create.upload.hint">JPG, PNG, WEBP or GIF</small>
+              </span>
+            </label>
+            <input type="file" id="group-photo-input" name="group_photo" accept="image/*">
+
+            <div class="form-group">
+              <label for="group-name-input" data-i18n="groups.form.name">Group Name</label>
+              <input id="group-name-input" type="text" name="group_name" placeholder="e.g. Jaipur Moonlight Circle" data-i18n-placeholder="groups.form.namePlaceholder" required>
+            </div>
+
+            <div class="sangha-form-row">
+              <div class="form-group">
+                <label for="group-type-input" data-i18n="groups.form.type">Type</label>
+                <select id="group-type-input" name="group_type" required>
+                  <option value="Public" data-i18n="groups.form.public">Public</option>
+                  <option value="Private" data-i18n="groups.form.private">Private</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="group-size-input" data-i18n="groups.form.capacity">Capacity</label>
+                <input id="group-size-input" type="number" name="max_members" min="2" max="100" value="12">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="destination-input" data-i18n="groups.form.destination">Destination</label>
+              <input id="destination-input" list="dest-list" name="destination_name" placeholder="Choose or type a destination" data-i18n-placeholder="groups.form.destinationPlaceholder" autocomplete="off" required>
+              <datalist id="dest-list">
+                {% for d in destinations %}
+                <option value="{{ d.destination_name }}"></option>
+                {% endfor %}
+              </datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="group-description-input" data-i18n="groups.form.desc">Trip Brief</label>
+              <textarea id="group-description-input" name="group_description" placeholder="Tell people the mood, route, or travel style." data-i18n-placeholder="groups.form.descPlaceholder"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-ast btn-lg sangha-submit-btn">
+              <i class="fas fa-circle-plus"></i>
+              <span data-i18n="groups.create.submit">Create Group</span>
+            </button>
+          </form>
+        </div>
+
+        <div class="card sangha-destination-card">
+          <div class="sangha-panel-head">
+            <span class="section-tag section-tag-tt" data-i18n="groups.destinations.tag">Destination Desk</span>
+            <h3 data-i18n="groups.destinations.title">Manage destinations</h3>
+            <p data-i18n="groups.destinations.desc">Keep the group creator list fresh with places your community is travelling to.</p>
+            <small class="sangha-destination-helper">Use a saved destination to prefill Create Circle or filter the live groups instantly.</small>
+            <div class="sangha-destination-status" id="destination-desk-status" aria-live="polite">Choose a destination to apply it to the form or explore matching circles.</div>
+          </div>
+
+          <form method="POST" action="/destinations/add" class="sangha-destination-form">
+            <input type="text" name="destination_name" placeholder="Destination name" data-i18n-placeholder="groups.destinations.namePlaceholder" required>
+            <input type="text" name="country" placeholder="Country" data-i18n-placeholder="groups.destinations.countryPlaceholder">
+            <button type="submit" class="btn btn-ghost" data-i18n="groups.destinations.add">Add Destination</button>
+          </form>
+
+          <div class="sangha-destination-list">
+            {% for d in destinations %}
+            <div class="sangha-destination-item" data-destination-name="{{ d.destination_name }}" data-destination-image="{{ d.cover_url }}">
+              <form method="POST" action="/destinations/edit/{{ d.destination_id }}" class="sangha-destination-inline">
+                <input type="text" name="destination_name" value="{{ d.destination_name }}">
+                <input type="text" name="country" value="{{ d.country or '' }}">
+                <button type="submit" class="btn btn-ghost btn-sm" aria-label="Save destination">💾</button>
+              </form>
+              <button type="button" class="btn btn-ghost btn-sm" data-destination-use="{{ d.destination_name }}" data-preview-image="{{ d.cover_url }}" title="Use in create circle">
+                <i class="fas fa-wand-magic-sparkles"></i>
+              </button>
+              <button type="button" class="btn btn-ghost btn-sm" data-destination-explore="{{ d.destination_name }}" title="Explore matching groups">
+                <i class="fas fa-compass"></i>
+              </button>
+              <a href="/destinations/delete/{{ d.destination_id }}" class="btn btn-danger btn-sm" onclick="return confirm('Delete this destination?')">🗑️</a>
+            </div>
+            {% else %}
+            <div class="sangha-destination-empty" data-i18n="groups.destinations.empty">No destinations yet.</div>
+            {% endfor %}
+          </div>
+        </div>
+      </aside>
+
+      <div class="sangha-content">
+        <div class="card sangha-toolbar" id="groups-explore-panel">
+          <div class="sangha-toolbar-head">
+            <div class="sangha-toolbar-copy">
+              <span class="section-tag section-tag-tt" data-i18n="groups.discover.tag">Discover</span>
+              <h3 data-i18n="groups.discover.title">Browse, filter, and join live groups</h3>
+            </div>
+            <div class="sangha-results-summary" aria-live="polite">
+              <strong id="groups-visible-count">{{ stats.group_count }}</strong>
+              <span>visible groups</span>
+            </div>
+          </div>
+          <div class="sangha-toolbar-controls">
+            <input type="search" id="g-search" placeholder="Search by group, owner, or destination" data-i18n-placeholder="groups.discover.searchPlaceholder">
+            <select id="g-type-filter">
+              <option value="All" data-i18n="groups.discover.filter.all">All Types</option>
+              <option value="Public" data-i18n="groups.form.public">Public</option>
+              <option value="Private" data-i18n="groups.form.private">Private</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sangha-results-meta">
+          <span class="sangha-results-chip">
+            <strong>{{ stats.group_count }}</strong>
+            <span data-i18n="groups.meta.groups">groups live</span>
+          </span>
+          <span class="sangha-results-chip">
+            <strong>{{ stats.public_count }}</strong>
+            <span data-i18n="groups.meta.public">open to join</span>
+          </span>
+          <span class="sangha-results-chip">
+            <strong>{{ stats.my_group_count }}</strong>
+            <span data-i18n="groups.meta.joined">already joined</span>
+          </span>
+        </div>
+
+        <div class="sangha-empty-filter hidden" id="group-empty-filter">
+          <h3 data-i18n="groups.discover.emptyFilterTitle">No circles match this filter.</h3>
+          <p data-i18n="groups.discover.emptyFilterDesc">Try another destination, clear the search, or create a new group.</p>
+        </div>
+
+        <div class="sangha-group-grid" id="groups-list">
+          {% if groups %}
+            {% for g in groups %}
+            <article
+              class="sangha-group-card card card-3d"
+              id="group-card-{{ g.group_id }}"
+              data-name="{{ g.group_name|lower }}"
+              data-dest="{{ (g.destination_name or '')|lower }}"
+              data-type="{{ g.group_type }}"
+              data-owner="{{ g.owner_name|lower }}">
+              <div class="sangha-group-media sangha-cover-shell sangha-cover-theme-{{ g.cover_theme }} {{ 'has-cover' if g.cover_url else 'is-fallback' }}" data-cover-shell>
+                {% if g.cover_url %}
+                <img src="{{ g.cover_url }}" alt="{{ g.group_name }} group cover" loading="lazy">
+                {% endif %}
+                <div class="sangha-group-media-fallback">
+                  <span class="sangha-group-media-kicker">{{ g.cover_mode|replace('_', ' ')|title }}</span>
+                  <strong>{{ g.group_name }}</strong>
+                  <p>{{ g.destination_name or 'Across India' }}</p>
+                </div>
+                <div class="sangha-group-media-overlay"></div>
+                <span class="badge {{ 'badge-tt' if g.group_type == 'Public' else 'badge-ast' }}">{{ g.group_type }}</span>
+                <span class="sangha-location-pill">
+                  <i class="fas fa-location-dot"></i>
+                  <span>{{ g.destination_name or 'Across India' }}</span>
+                </span>
+              </div>
+
+              <div class="sangha-group-body">
+                <div class="sangha-group-topline">
+                  <div>
+                    <h3>{{ g.group_name }}</h3>
+                    <p class="sangha-group-owner">
+                      <span data-i18n="groups.card.owner">Led by</span>
+                      <strong>{{ g.owner_name }}</strong>
+                    </p>
+                  </div>
+                  <div class="sangha-member-pill">
+                    <strong>{{ g.member_count }}</strong>
+                    <small>/ {{ g.max_members }}</small>
+                  </div>
+                </div>
+
+                <p class="sangha-group-description">{{ g.group_description or 'No trip brief yet. Create the mood with your cover photo and destination.' }}</p>
+
+                <div class="sangha-group-footer">
+                  <div class="sangha-mini-avatars" aria-hidden="true">
+                    {% for letter in g.story_initials %}
+                    <span>{{ letter }}</span>
+                    {% endfor %}
+                  </div>
+                  <div class="sangha-group-meta">
+                    <span><i class="fas fa-user-group"></i> {{ g.member_count }} <span data-i18n="groups.card.members">members</span></span>
+                    <span><i class="fas fa-calendar"></i> {{ g.created_at_label }}</span>
+                  </div>
+                </div>
+
+                <div class="sangha-group-actions">
+                  {% if g.is_member %}
+                    <a href="/groups/chat/{{ g.group_id }}" class="btn btn-tt">
+                      <i class="fas fa-comments"></i>
+                      <span data-i18n="groups.card.chat">Chat</span>
+                    </a>
+                    {% if user.id == g.owner_id %}
+                    <a href="/groups/delete/{{ g.group_id }}" class="btn btn-danger" onclick="return confirm('Permanently delete this group?')">
+                      <i class="fas fa-trash"></i>
+                      <span data-i18n="groups.card.delete">Delete</span>
+                    </a>
+                    {% else %}
+                    <a href="/groups/leave/{{ g.group_id }}" class="btn btn-ghost">
+                      <i class="fas fa-right-from-bracket"></i>
+                      <span data-i18n="groups.card.leave">Leave</span>
+                    </a>
+                    {% endif %}
+                  {% else %}
+                  <a href="/groups/join/{{ g.group_id }}" class="btn btn-ast">
+                    <i class="fas fa-user-plus"></i>
+                    <span data-i18n="groups.card.join">Join</span>
+                  </a>
+                  {% endif %}
+                </div>
+              </div>
+            </article>
+            {% endfor %}
+          {% else %}
+          <div class="sangha-zero-state card">
+            <div class="sangha-zero-art"></div>
+            <h3 data-i18n="groups.zero.title">No circles yet.</h3>
+            <p data-i18n="groups.zero.desc">Create the first group, upload a cover, and give SAFAR its first travel story on this page.</p>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer-v2">
+    <div class="footer-v2-grid">
+      <div class="footer-v2-brand">
+        <div class="footer-logo"><span class="logo-safar">SAFAR</span></div>
+        <p data-i18n="footer.brand">India's first AI-powered group travel platform with real-time tourist safety.</p>
+      </div>
+      <div class="footer-v2-col">
+        <h4 data-i18n="footer.quick">Quick Links</h4>
+        <a href="/" data-i18n="nav.home">Home</a>
+        <a href="/travel" data-i18n="footer.ai">AI Assistant</a>
+        <a href="/profile" data-i18n="footer.safety.dashboard">Safety Dashboard</a>
+      </div>
+      <div class="footer-v2-col">
+        <h4 data-i18n="groups.footer.title">Groups</h4>
+        <a href="#group-create-panel" data-i18n="groups.footer.create">Create Circle</a>
+        <a href="#groups-discover" data-i18n="groups.footer.browse">Browse Circles</a>
+      </div>
+      <div class="footer-v2-col">
+        <h4 data-i18n="footer.resources.title">Resources</h4>
+        <a href="/blockchain" data-i18n="nav.identity">Identity Ledger</a>
+        <a href="/about" data-i18n="nav.about">About</a>
+      </div>
+    </div>
+    <div class="footer-v2-bottom">
+      <p data-i18n="footer.copy">© 2025 SAFAR - Built with care by Team Safar</p>
+    </div>
   </footer>
+
+  <div class="gita-modal-overlay" id="gita-full-modal">
+    <div class="gita-modal-box">
+      <div class="gita-modal-diya">🪔</div>
+      <div class="gita-modal-sanskrit"></div>
+      <div class="gita-modal-hindi"></div>
+      <div class="gita-modal-english"></div>
+      <div class="gita-modal-ref"></div>
+      <button class="gita-modal-close" type="button">✕ Close</button>
+    </div>
+  </div>
 
   <script src="/static/script.js"></script>
   <script src="/static/dictionary-agent.js"></script>
   <script src="/static/translator-core.js"></script>
   <script src="/static/translators/groups.translator.js"></script>
   <script src="/static/mayurya-bubble.js"></script>
-  <script>
-    const search = document.getElementById('g-search');
-    const typeFilter = document.getElementById('g-type-filter');
-    function filterGroups() {
-      const q = search.value.toLowerCase();
-      const t = typeFilter.value;
-      document.querySelectorAll('.group-card').forEach(c => {
-        const matchQ = c.dataset.name.includes(q) || c.dataset.dest.includes(q);
-        const matchT = t === 'All' || c.dataset.type === t;
-        c.style.display = (matchQ && matchT) ? '' : 'none';
-      });
-    }
-    search.addEventListener('input', filterGroups);
-    typeFilter.addEventListener('change', filterGroups);
-  </script>
+  <script src="/static/groups.js"></script>
 </body>
-
 </html>
