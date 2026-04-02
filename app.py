@@ -742,9 +742,9 @@ def check_for_anomalies():
 
         data = []
         for t in active:
-            idle = (now - t.last_updated_at).total_seconds()
+            idle_seconds = (now - t.last_updated_at).total_seconds() if t.last_updated_at else 0
             score = t.safety_score
-            data.append([idle, score])
+            data.append([idle_seconds, score])
 
         if len(data) >= 3:
             try:
@@ -2463,21 +2463,30 @@ def blynk_loop():
         time.sleep(0.4) # Accelerated 400ms micro-poll to catch unmodified Arduino 1.2s momentary pulses
 
 def serial_monitor_loop():
-    """Reads directly from the ESP32 over USB (COM5) at 115200 baud for absolute 0-latency alerts."""
+    """Reads directly from the ESP32 over USB at 115200 baud for absolute 0-latency alerts, auto-detecting COM port."""
     try:
         import serial
+        import serial.tools.list_ports
     except ImportError:
         print("[USB Serial] PySerial not installed. Run: pip install pyserial")
         return
         
-    try:
-        ser = serial.Serial('COM5', 115200, timeout=1)
-        print("[USB Serial] 🟢 Successfully connected to COM5 directly! Bypassing cloud latency.")
-    except Exception as e:
-        print(f"[USB Serial] 🔴 Could not open COM5: {e}")
-        return
-
+    ser = None
     while True:
+        if ser is None or not ser.is_open:
+            ports = list(serial.tools.list_ports.comports())
+            # Usually Arduino/ESP appear as USB Serial Device
+            for p in ports:
+                try:
+                    ser = serial.Serial(p.device, 115200, timeout=1)
+                    print(f"[USB Serial] 🟢 Successfully connected to {p.device} directly! Bypassing cloud latency.")
+                    break
+                except Exception:
+                    pass
+            if ser is None or not ser.is_open:
+                time.sleep(5) # Retry finding port every 5 seconds
+                continue
+
         try:
             if ser.in_waiting > 0:
                 line = ser.readline().decode('utf-8', errors='ignore').strip()
@@ -2485,13 +2494,13 @@ def serial_monitor_loop():
                 if line:
                     with app.app_context():
                         # Link this hardware to the first Active IoT Tourist
-                        user = Tourist.query.filter(Tourist.iot_token.isnot(None), Tourist.iot_token != "").first()
+                        user = Tourist.query.filter_by(iot_mode_enabled=True).first()
                         if not user:
                             continue
                             
                         # 1. 0-LATENCY USB SOS TRIGGER
                         if "SOS BUTTON PRESSED" in line.upper():
-                            print(f"[USB Serial] 🚨 INSTANT HARDWARE SOS DETECTED FROM COM3!!!")
+                            print(f"[USB Serial] 🚨 INSTANT HARDWARE SOS DETECTED FROM {ser.port}!!!")
                             socketio.emit('hardware_sos_triggered', {'tourist_id': user.id}, namespace='/')
                             
                             db.session.add(Alert(tourist_id=user.id, location=user.last_known_location, alert_type='HARDWARE Panic'))
