@@ -1,6 +1,3 @@
-"""
-database.py - Combined Models for TravelTogether + Astra Tourist Safety
-"""
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import ForeignKey, text
@@ -12,17 +9,13 @@ import time as _time
 
 db = SQLAlchemy()
 
-# ─────────────────────────────────────────────
 # SHARED UTILITY
-# ─────────────────────────────────────────────
 
 def generate_id():
     return uuid.uuid4().hex
 
 
-# ─────────────────────────────────────────────
 # BLOCKCHAIN SECURITY LAYER
-# ─────────────────────────────────────────────
 
 class BlockchainBlock(db.Model):
     """Immutable Ledger for Login/Registration Security (Industry Standard)."""
@@ -90,9 +83,8 @@ class BlockchainBlock(db.Model):
         return new_block
 
 
-# ─────────────────────────────────────────────
 # PROJECT 1 – TRAVEL TOGETHER MODELS
-# ─────────────────────────────────────────────
+
 
 class User(db.Model):
     __tablename__ = 'users'
