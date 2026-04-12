@@ -2,8 +2,8 @@
 
 SAFAR is a comprehensive Flask-based web application that combines two main components:
 
-TravelTogether: Travel group management, destination planning, and real-time group chat
-Astra Safety: Tourist registration, live safety tracking, geo-fencing, anomaly detection, and emergency alerts
+Safar: Travel group management, destination planning, and real-time group chat
+Garuda Safety: Tourist registration, live safety tracking, geo-fencing, anomaly detection, and emergency alerts
 The app includes optional IoT integration for device tracking and supports SMS notifications via Twilio.
 
 Key Features
